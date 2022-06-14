@@ -4,6 +4,7 @@ Single header Objective-C++ lib for SwiftUI like dev on iOS
 ## Usage
 You can downoload the floui.hpp header and add it to your xcode project. Remember to change the extension of your ViewController.m file to .mm (to indicate you're using C++).
 ```objc
+// ViewController.mm
 
 #import "ViewController.h"
 #define FLOUI_IMPL
