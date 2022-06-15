@@ -1,18 +1,18 @@
 /*
  MIT License
- 
+
  Copyright (c) 2022 Mohammed Alyousef
- 
+
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
  in the Software without restriction, including without limitation the rights
  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  copies of the Software, and to permit persons to whom the Software is
  furnished to do so, subject to the following conditions:
- 
+
  The above copyright notice and this permission notice shall be included in all
  copies or substantial portions of the Software.
- 
+
  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,12 +25,11 @@
 #ifndef floui_h
 #define floui_h
 
-
+#include <TargetConditionals.h>
 #include <functional>
 #include <initializer_list>
 #include <unordered_map>
 #include <vector>
-#include <TargetConditionals.h>
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
@@ -54,58 +53,58 @@
 #error "Unsupported platform"
 #endif
 
-#define DECLARE_STYLES(widget)\
-widget &background(OSCOLOR *col);\
-widget &tint(OSCOLOR *col);\
-widget &id(const char *val);
+#define DECLARE_STYLES(widget)                                                                     \
+    widget &background(OSCOLOR *col);                                                              \
+    widget &tint(OSCOLOR *col);                                                                    \
+    widget &id(const char *val);
 
 #if TARGET_OS_OSX
-@interface MyView: NSView
--(id)init;
--(id)initWithFrame:(NSRect)rect;
--(BOOL)isFlipped;
+@interface MyView : NSView
+- (id)init;
+- (id)initWithFrame:(NSRect)rect;
+- (BOOL)isFlipped;
 @end
 #endif
 
-@interface Callback: NSObject {
+@interface Callback : NSObject {
     std::function<void()> *fn_;
 }
--(id)initWithCb:(const std::function<void()> &)f;
--(void)invoke;
--(void)dealloc;
+- (id)initWithCb:(const std::function<void()> &)f;
+- (void)invoke;
+- (void)dealloc;
 @end
 
 class Widget {
-protected:
-    static inline std::unordered_map<const char *, OSVIEW *> widget_map {};
+  protected:
+    static inline std::unordered_map<const char *, OSVIEW *> widget_map{};
     OSVIEW *view = nullptr;
-public:
+
+  public:
     explicit Widget(OSVIEW *v);
-    explicit operator OSVIEW*() const;
-    template<typename T, typename = std::enable_if_t<std::is_base_of_v<Widget, T>>>
+    explicit operator OSVIEW *() const;
+    template <typename T, typename = std::enable_if_t<std::is_base_of_v<Widget, T>>>
     static T from_id(const char *v) {
-        return T {widget_map[v]};
+        return T{widget_map[v]};
     }
     DECLARE_STYLES(Widget)
 };
 
-class Button: public Widget {
+class Button : public Widget {
     Callback *cb_ = nullptr;
-public:
+
+  public:
     explicit Button(OSVIEW *b);
     explicit Button(NSString *label);
+    Button &filled();
     Button &action(std::function<void()> &&f);
     Button &action(::id target, SEL s);
-#if TARGET_OS_IPHONE
-    Button &config(UIButtonConfiguration *conf);
-#endif
     Button &foreground(OSCOLOR *c);
     explicit operator OSBUTTON *() const;
     DECLARE_STYLES(Button)
 };
 
-class Text: public Widget {
-public:
+class Text : public Widget {
+  public:
     explicit Text(OSVIEW *b);
     explicit Text(NSString *s);
     Text &center();
@@ -116,33 +115,34 @@ public:
     DECLARE_STYLES(Text)
 };
 
-class Spacer: public Widget {
-public:
+class Spacer : public Widget {
+  public:
     explicit Spacer(OSVIEW *b);
     Spacer();
     DECLARE_STYLES(Spacer)
 };
 
-class MainView: public Widget {
+class MainView : public Widget {
     std::vector<OSVIEW *> children = {};
     int margins = 10;
-public:
+
+  public:
     explicit MainView(OSVIEW *);
     MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l);
     explicit operator OSVIEW *() const;
     DECLARE_STYLES(MainView)
 };
 
-class VStack: public Widget {
-public:
+class VStack : public Widget {
+  public:
     explicit VStack(OSVIEW *v);
     explicit VStack(std::initializer_list<Widget> l);
     explicit operator OSSTACKVIEW *() const;
     DECLARE_STYLES(VStack)
 };
 
-class HStack: public Widget {
-public:
+class HStack : public Widget {
+  public:
     explicit HStack(OSVIEW *v);
     explicit HStack(std::initializer_list<Widget> l);
     explicit operator OSSTACKVIEW *() const;
@@ -153,49 +153,58 @@ public:
 
 #if TARGET_OS_IPHONE
 
-#define DEFINE_STYLES(widget)\
-widget &widget::background(UIColor *col) { view.backgroundColor = col; return *this; } \
-widget &widget::tint(UIColor *col) { view.tintColor = col; return *this; } \
-widget &widget::id(const char *val) { widget_map[val] = view; return *this; }
+#define DEFINE_STYLES(widget)                                                                      \
+    widget &widget::background(UIColor *col) {                                                     \
+        view.backgroundColor = col;                                                                \
+        return *this;                                                                              \
+    }                                                                                              \
+    widget &widget::tint(UIColor *col) {                                                           \
+        view.tintColor = col;                                                                      \
+        return *this;                                                                              \
+    }                                                                                              \
+    widget &widget::id(const char *val) {                                                          \
+        widget_map[val] = view;                                                                    \
+        return *this;                                                                              \
+    }
 
 @implementation Callback
--(id)initWithCb:(const std::function<void()> &)f {
+- (id)initWithCb:(const std::function<void()> &)f {
     self = [super init];
     fn_ = new std::function<void()>(f);
     return self;
 }
--(void)invoke {
+- (void)invoke {
     (*fn_)();
 }
--(void)dealloc {
+- (void)dealloc {
     delete fn_;
     fn_ = nil;
 }
 @end
 
-Widget::Widget(UIView *v): view(v) {}
+Widget::Widget(UIView *v) : view(v) {}
 
-Widget::operator OSVIEW*()  const {
-    return view;
-}
+Widget::operator OSVIEW *() const { return view; }
 
 DEFINE_STYLES(Widget)
 
-Button::Button(OSVIEW *b): Widget(b) {}
+Button::Button(OSVIEW *b) : Widget(b) {}
 
-Button::Button(NSString *label): Widget([UIButton buttonWithType:UIButtonTypeCustom]) {
+Button::Button(NSString *label) : Widget([UIButton buttonWithType:UIButtonTypeCustom]) {
     [(UIButton *)view setTitle:label forState:UIControlStateNormal];
     [(UIButton *)view setTitleColor:UIColor.blueColor forState:UIControlStateNormal];
 }
 
-Button &Button::config(UIButtonConfiguration *conf) {
+Button &Button::filled() {
     ((UIButton *)view).configuration = [UIButtonConfiguration filledButtonConfiguration];
     return *this;
 }
 
 Button &Button::action(std::function<void()> &&f) {
-    cb_ = [[Callback alloc]initWithCb:f];
-    [(UIButton *)view addTarget:cb_ action:@selector(invoke) forControlEvents:UIControlEventTouchUpInside];
+    cb_ = [[Callback alloc] initWithCb:f];
+    [(UIButton *)view addTarget:cb_
+                         action:@selector(invoke)
+               forControlEvents:UIControlEventTouchUpInside];
     return *this;
 }
 
@@ -204,9 +213,7 @@ Button &Button::action(::id target, SEL s) {
     return *this;
 }
 
-Button::operator UIButton *()  const {
-    return (UIButton *)view;
-}
+Button::operator UIButton *() const { return (UIButton *)view; }
 
 Button &Button::foreground(UIColor *c) {
     [(UIButton *)view setTitleColor:c forState:UIControlStateNormal];
@@ -215,9 +222,9 @@ Button &Button::foreground(UIColor *c) {
 
 DEFINE_STYLES(Button)
 
-Text::Text(UIView *b): Widget(b) {}
+Text::Text(UIView *b) : Widget(b) {}
 
-Text::Text(NSString *s): Widget([UILabel new]) {
+Text::Text(NSString *s) : Widget([UILabel new]) {
     [(UILabel *)view setText:s];
     [(UILabel *)view setTextColor:UIColor.blackColor];
 }
@@ -242,24 +249,22 @@ Text &Text::font(UIFont *font) {
     return *this;
 }
 
-Text::operator UILabel *()  const {
-    return (UILabel *)view;
-}
+Text::operator UILabel *() const { return (UILabel *)view; }
 
 DEFINE_STYLES(Text)
 
-Spacer::Spacer(UIView *b): Widget(b) {}
+Spacer::Spacer(UIView *b) : Widget(b) {}
 
-Spacer::Spacer(): Widget([UIView new]) {}
+Spacer::Spacer() : Widget([UIView new]) {}
 
 DEFINE_STYLES(Spacer)
 
-MainView::MainView(UIView *v): Widget(v) {}
+MainView::MainView(UIView *v) : Widget(v) {}
 
-MainView::MainView(UIViewController *vc, std::initializer_list<Widget> l): Widget([UIView new]) {
+MainView::MainView(UIViewController *vc, std::initializer_list<Widget> l) : Widget([UIView new]) {
     [vc.view addSubview:view];
     view.frame = vc.view.frame;
-    for (auto e: l) {
+    for (auto e : l) {
         children.push_back((UIView *)e);
     }
     auto frame = view.frame;
@@ -269,109 +274,113 @@ MainView::MainView(UIViewController *vc, std::initializer_list<Widget> l): Widge
     auto w = frame.size.width;
     auto h = (frame.size.height) / count;
     auto i = 0;
-    for (auto e: children) {
+    for (auto e : children) {
         [view addSubview:e];
-        e.frame = CGRectMake(x, y + ((h+margins) * i), w, h);
+        e.frame = CGRectMake(x, y + ((h + margins) * i), w, h);
         i += 1;
     }
 }
 
-MainView::operator UIView *()  const {
-    return view;
-}
+MainView::operator UIView *() const { return view; }
 
 DEFINE_STYLES(MainView)
 
-VStack::VStack(UIView *v): Widget(v) {}
+VStack::VStack(UIView *v) : Widget(v) {}
 
-VStack::VStack(std::initializer_list<Widget> l): Widget([[UIStackView alloc]initWithFrame:[[UIScreen mainScreen]bounds]]) {
+VStack::VStack(std::initializer_list<Widget> l)
+    : Widget([[UIStackView alloc] initWithFrame:[[UIScreen mainScreen] bounds]]) {
     [(UIStackView *)view setAxis:UILayoutConstraintAxisVertical];
     [(UIStackView *)view setDistribution:UIStackViewDistributionFillEqually];
     [(UIStackView *)view setAlignment:UIStackViewAlignmentCenter];
     [(UIStackView *)view setSpacing:10];
-    for (auto e: l) {
+    for (auto e : l) {
         [(UIStackView *)view addArrangedSubview:(UIView *)e];
     }
 }
 
-VStack::operator UIStackView *()  const {
-    return (UIStackView *)view;
-}
+VStack::operator UIStackView *() const { return (UIStackView *)view; }
 
 DEFINE_STYLES(VStack)
 
-HStack::HStack(UIView *v): Widget(v) {}
+HStack::HStack(UIView *v) : Widget(v) {}
 
-HStack::HStack(std::initializer_list<Widget> l): Widget([[UIStackView alloc]initWithFrame:[[UIScreen mainScreen]bounds]]) {
+HStack::HStack(std::initializer_list<Widget> l)
+    : Widget([[UIStackView alloc] initWithFrame:[[UIScreen mainScreen] bounds]]) {
     [(UIStackView *)view setAxis:UILayoutConstraintAxisHorizontal];
     [(UIStackView *)view setDistribution:UIStackViewDistributionFillEqually];
     [(UIStackView *)view setAlignment:UIStackViewAlignmentCenter];
     [(UIStackView *)view setSpacing:10];
-    for (auto e: l) {
+    for (auto e : l) {
         [(UIStackView *)view addArrangedSubview:(UIView *)e];
     }
 }
 
-HStack::operator UIStackView *()  const {
-    return (UIStackView *)view;
-}
+HStack::operator UIStackView *() const { return (UIStackView *)view; }
 
 DEFINE_STYLES(HStack)
 
 #else
 // cococa stuff
-#define DEFINE_STYLES(widget)\
-widget &widget::background(OSCOLOR *col) { view.layer.backgroundColor = col.CGColor; return *this; } \
-widget &widget::tint(OSCOLOR *col) { (void)col; return *this; } \
-widget &widget::id(const char *val) { widget_map[val] = view; return *this; }
+#define DEFINE_STYLES(widget)                                                                      \
+    widget &widget::background(OSCOLOR *col) {                                                     \
+        view.layer.backgroundColor = col.CGColor;                                                  \
+        return *this;                                                                              \
+    }                                                                                              \
+    widget &widget::tint(OSCOLOR *col) {                                                           \
+        (void)col;                                                                                 \
+        return *this;                                                                              \
+    }                                                                                              \
+    widget &widget::id(const char *val) {                                                          \
+        widget_map[val] = view;                                                                    \
+        return *this;                                                                              \
+    }
 
 @implementation MyView
--(id)init {
+- (id)init {
     self = [super init];
     return self;
 }
--(id)initWithFrame:(NSRect)rect {
+- (id)initWithFrame:(NSRect)rect {
     self = [super initWithFrame:rect];
     return self;
 }
--(BOOL)isFlipped {
+- (BOOL)isFlipped {
     return YES;
 }
 @end
 
 @implementation Callback
--(id)initWithCb:(const std::function<void()> &)f {
+- (id)initWithCb:(const std::function<void()> &)f {
     self = [super init];
     fn_ = new std::function<void()>(f);
     return self;
 }
--(void)invoke {
+- (void)invoke {
     (*fn_)();
 }
--(void)dealloc {
+- (void)dealloc {
     delete fn_;
     fn_ = nil;
 }
 @end
 
-Widget::Widget(OSVIEW *v): view(v) {
-    view.wantsLayer = YES;
-}
+Widget::Widget(OSVIEW *v) : view(v) { view.wantsLayer = YES; }
 
-Widget::operator OSVIEW*()  const {
-    return view;
-}
+Widget::operator OSVIEW *() const { return view; }
 
 DEFINE_STYLES(Widget)
 
-Button::Button(OSVIEW *b): Widget(b) {}
+Button::Button(OSVIEW *b) : Widget(b) {}
 
-Button::Button(NSString *label): Widget([NSButton new]) {
-    [(NSButton *)view setTitle:label];
+Button::Button(NSString *label) : Widget([NSButton new]) { [(NSButton *)view setTitle:label]; }
+
+Button &Button::filled() {
+    ((NSButton *)view).layer.cornerRadius = 5;
+    return *this;
 }
 
 Button &Button::action(std::function<void()> &&f) {
-    cb_ = [[Callback alloc]initWithCb:f];
+    cb_ = [[Callback alloc] initWithCb:f];
     [(NSButton *)view setTarget:cb_];
     [(NSButton *)view setAction:@selector(invoke)];
     return *this;
@@ -383,9 +392,7 @@ Button &Button::action(::id target, SEL s) {
     return *this;
 }
 
-Button::operator OSBUTTON *()  const {
-    return (OSBUTTON *)view;
-}
+Button::operator OSBUTTON *() const { return (OSBUTTON *)view; }
 
 Button &Button::foreground(OSCOLOR *c) {
     ((NSButton *)view).contentTintColor = c;
@@ -394,9 +401,9 @@ Button &Button::foreground(OSCOLOR *c) {
 
 DEFINE_STYLES(Button)
 
-Text::Text(OSVIEW *b): Widget(b) {}
+Text::Text(OSVIEW *b) : Widget(b) {}
 
-Text::Text(NSString *s): Widget([NSTextField new]) {
+Text::Text(NSString *s) : Widget([NSTextField new]) {
     [(NSTextField *)view setBezeled:NO];
     [(NSTextField *)view setDrawsBackground:NO];
     [(NSTextField *)view setEditable:NO];
@@ -424,23 +431,22 @@ Text &Text::font(OSFONT *font) {
     return *this;
 }
 
-Text::operator OSLABEL *()  const {
-    return (NSTextField *)view;
-}
+Text::operator OSLABEL *() const { return (NSTextField *)view; }
 
 DEFINE_STYLES(Text)
 
-Spacer::Spacer(OSVIEW *b): Widget(b) {}
+Spacer::Spacer(OSVIEW *b) : Widget(b) {}
 
-Spacer::Spacer(): Widget([NSView new]) {}
+Spacer::Spacer() : Widget([NSView new]) {}
 
 DEFINE_STYLES(Spacer)
 
-MainView::MainView(OSVIEW *v): Widget(v) {}
+MainView::MainView(OSVIEW *v) : Widget(v) {}
 
-MainView::MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l): Widget([MyView new]) {    [vc.view addSubview:view];
+MainView::MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l) : Widget([MyView new]) {
+    [vc.view addSubview:view];
     view.frame = vc.view.frame;
-    for (auto e: l) {
+    for (auto e : l) {
         children.push_back((NSView *)e);
     }
     auto frame = view.frame;
@@ -450,52 +456,46 @@ MainView::MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l): Widge
     auto w = frame.size.width;
     auto h = (frame.size.height) / count;
     auto i = 0;
-    for (auto e: children) {
+    for (auto e : children) {
         [view addSubview:e];
-        e.frame = CGRectMake(x, y + ((h+margins) * i), w, h);
+        e.frame = CGRectMake(x, y + ((h + margins) * i), w, h);
         i += 1;
     }
 }
 
-MainView::operator OSVIEW *()  const {
-    return view;
-}
+MainView::operator OSVIEW *() const { return view; }
 
 DEFINE_STYLES(MainView)
 
-VStack::VStack(OSVIEW *v): Widget(v) {}
+VStack::VStack(OSVIEW *v) : Widget(v) {}
 
-VStack::VStack(std::initializer_list<Widget> l): Widget([NSStackView new]) {
+VStack::VStack(std::initializer_list<Widget> l) : Widget([NSStackView new]) {
     [(NSStackView *)view setOrientation:NSUserInterfaceLayoutOrientationVertical];
     [(NSStackView *)view setDistribution:NSStackViewDistributionFillEqually];
     [(NSStackView *)view setAlignment:NSLayoutAttributeCenterX];
     [(NSStackView *)view setSpacing:10];
-    for (auto e: l) {
+    for (auto e : l) {
         [(NSStackView *)view addArrangedSubview:(NSView *)e];
     }
 }
 
-VStack::operator OSSTACKVIEW *()  const {
-    return (NSStackView *)view;
-}
+VStack::operator OSSTACKVIEW *() const { return (NSStackView *)view; }
 
 DEFINE_STYLES(VStack)
 
-HStack::HStack(OSVIEW *v): Widget(v) {}
+HStack::HStack(OSVIEW *v) : Widget(v) {}
 
-HStack::HStack(std::initializer_list<Widget> l): Widget([NSStackView new]) {
+HStack::HStack(std::initializer_list<Widget> l) : Widget([NSStackView new]) {
     [(NSStackView *)view setOrientation:NSUserInterfaceLayoutOrientationHorizontal];
     [(NSStackView *)view setDistribution:NSStackViewDistributionFillEqually];
     [(NSStackView *)view setAlignment:NSLayoutAttributeCenterY];
     [(NSStackView *)view setSpacing:10];
-    for (auto e: l) {
+    for (auto e : l) {
         [(NSStackView *)view addArrangedSubview:(NSView *)e];
     }
 }
 
-HStack::operator OSSTACKVIEW *()  const {
-    return (NSStackView *)view;
-}
+HStack::operator OSSTACKVIEW *() const { return (NSStackView *)view; }
 
 DEFINE_STYLES(HStack)
 

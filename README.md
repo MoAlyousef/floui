@@ -24,6 +24,9 @@ int val;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+#if TARGET_OS_OSX
+    self.view.frame = NSMakeRect(0, 0, 600, 400);
+#endif
     MainView(self, {
         Text(@"Counter")
             .center()
@@ -34,15 +37,17 @@ int val;
         VStack({
             Button(@"Increment")
                 .action(self, @selector(increment))
-//                .config([UIButtonConfiguration filledButtonConfiguration]) // IOS only
+                .filled()
+                .background(COLOR.blueColor)
                 .foreground(COLOR.whiteColor),
             Text(@"0").id("mytext"),
             dec_btn
                 .foreground(COLOR.whiteColor)
-//                .config([UIButtonConfiguration filledButtonConfiguration]) // IOS only
+                .filled()
+                .background(COLOR.blueColor)
                 .action([=] { // modern C++ lambda syntax
                 val--;
-                Widget::from_id<Text>("mytext").text([NSString stringWithFormat:@"%d", val]); 
+                Widget::from_id<Text>("mytext").text([NSString stringWithFormat:@"%d", val]);
             }),
         }),
         Spacer(),
@@ -60,7 +65,7 @@ Add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
 
 ![image](https://user-images.githubusercontent.com/37966791/173707028-a6e076c2-4170-459e-88a7-bd555ecfd1fa.png)
 
-![image](https://user-images.githubusercontent.com/37966791/173868139-7c715f8f-24d5-41ab-8b5c-b364a9fe3cef.png)
+![image](https://user-images.githubusercontent.com/37966791/173926274-4ea69936-708d-4b24-92e3-48e40bde8ce5.png)
 
 ## Todo
 - Wrap more UIKit and AppKit controls.
