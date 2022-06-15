@@ -41,7 +41,7 @@
 #define OSCOLOR UIColor
 #define OSFONT UIFont
 #define OSVIEWCONTROLLER UIViewController
-#elif TARGET_OS_MAC
+#elif TARGET_OS_OSX
 #import <Cocoa/Cocoa.h>
 #define OSVIEW NSView
 #define OSBUTTON NSButton
@@ -59,7 +59,7 @@ widget &background(OSCOLOR *col);\
 widget &tint(OSCOLOR *col);\
 widget &id(const char *val);
 
-#if TARGET_OS_MAC
+#if TARGET_OS_OSX
 @interface MyView: NSView
 -(id)init;
 -(id)initWithFrame:(NSRect)rect;
