@@ -1,5 +1,5 @@
 # floui
-Single header Objective-C++ lib inspired by SwiftUI
+floui, pronounced "flowy", is a single header Objective-C++ lib inspired by SwiftUI. 
 
 ## Usage
 You can downoload the floui.hpp header and add it to your xcode project. Remember to change the extension of your ViewController.m file to .mm (to indicate you're using C++).
