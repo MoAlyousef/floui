@@ -39,10 +39,10 @@ int val;
             Text(@"0").id("mytext"),
             dec_btn
                 .foreground(COLOR.whiteColor)
-//                .config([UIButtonConfiguration filledButtonConfiguration])
+//                .config([UIButtonConfiguration filledButtonConfiguration]) // IOS only
                 .action([=] { // modern C++ lambda syntax
                 val--;
-                Widget::from_id<Text>("mytext").text([NSString stringWithFormat:@"%d", val]); // IOS only
+                Widget::from_id<Text>("mytext").text([NSString stringWithFormat:@"%d", val]); 
             }),
         }),
         Spacer(),
@@ -59,6 +59,8 @@ int val;
 Add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
 
 ![image](https://user-images.githubusercontent.com/37966791/173707028-a6e076c2-4170-459e-88a7-bd555ecfd1fa.png)
+
+![image](https://user-images.githubusercontent.com/37966791/173868139-7c715f8f-24d5-41ab-8b5c-b364a9fe3cef.png)
 
 ## Todo
 - Wrap more UIKit and AppKit controls.
