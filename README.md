@@ -1,5 +1,5 @@
 # floui
-Single header Objective-C++ lib for SwiftUI like dev on iOS
+Single header Objective-C++ lib inspired by SwiftUI
 
 ## Usage
 You can downoload the floui.hpp header and add it to your xcode project. Remember to change the extension of your ViewController.m file to .mm (to indicate you're using C++).
@@ -8,11 +8,15 @@ You can downoload the floui.hpp header and add it to your xcode project. Remembe
 
 #import "ViewController.h"
 #define FLOUI_IMPL
-#import "floui.hpp"
+#include "floui.hpp"
 
-@interface ViewController ()
-
-@end
+#if TARGET_OS_IPHONE
+#define FONT UIFont
+#define COLOR UIColor
+#else
+#define FONT NSFont
+#define COLOR NSColor
+#endif
 
 @implementation ViewController
 Button dec_btn(@"Decrement"); // since we want to use a C++ lambda
@@ -23,22 +27,22 @@ int val;
     MainView(self, {
         Text(@"Counter")
             .center()
-            .foreground(UIColor.whiteColor)
-            .font([UIFont boldSystemFontOfSize:30])
-            .background(UIColor.purpleColor),
+            .foreground(COLOR.whiteColor)
+            .font([FONT boldSystemFontOfSize:30])
+            .background(COLOR.purpleColor),
         Spacer(),
         VStack({
             Button(@"Increment")
                 .action(self, @selector(increment))
-                .config([UIButtonConfiguration filledButtonConfiguration])
-                .foreground(UIColor.whiteColor),
+//                .config([UIButtonConfiguration filledButtonConfiguration]) // IOS only
+                .foreground(COLOR.whiteColor),
             Text(@"0").id("mytext"),
             dec_btn
-                .foreground(UIColor.whiteColor)
-                .config([UIButtonConfiguration filledButtonConfiguration])
+                .foreground(COLOR.whiteColor)
+//                .config([UIButtonConfiguration filledButtonConfiguration])
                 .action([=] { // modern C++ lambda syntax
                 val--;
-                Widget::from_id<Text>("mytext").text([NSString stringWithFormat:@"%d", val]);
+                Widget::from_id<Text>("mytext").text([NSString stringWithFormat:@"%d", val]); // IOS only
             }),
         }),
         Spacer(),
@@ -57,4 +61,4 @@ Add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
 ![image](https://user-images.githubusercontent.com/37966791/173707028-a6e076c2-4170-459e-88a7-bd555ecfd1fa.png)
 
 ## Todo
-- Wrap more UIKit controls.
+- Wrap more UIKit and AppKit controls.
