@@ -46,9 +46,9 @@ int val;
                 .filled()
                 .background(COLOR.blueColor)
                 .action([=] { // modern C++ lambda syntax
-                val--;
-                Widget::from_id<Text>("mytext").text([NSString stringWithFormat:@"%d", val]);
-            }),
+                    val--;
+                    Widget::from_id<Text>("mytext").text([NSString stringWithFormat:@"%d", val]);
+                }),
         }),
         Spacer(),
         Spacer(),
