@@ -51,7 +51,7 @@
 #define OSVIEWCONTROLLER NSViewController
 #else
 #error "Unsupported platform"
-#endif
+#endif // TARGET_OS_IPHONE
 
 #define DECLARE_STYLES(widget)                                                                     \
     widget &background(OSCOLOR *col);                                                              \
@@ -500,8 +500,8 @@ HStack::operator OSSTACKVIEW *() const { return (NSStackView *)view; }
 
 DEFINE_STYLES(HStack)
 
-#endif
+#endif // TARGET_OS_IPHONE
 
-#endif
+#endif // FLOUI_IMPL
 
-#endif /* floui_h */
+#endif // __FLOUI_H__

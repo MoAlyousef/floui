@@ -1,7 +1,6 @@
-// This is just for testing on both iOS and macOS without storyboards and outside xcode, don't
-// structure your code this way!
+// This is just for testing on both iOS and macOS on CI, without storyboards and outside xcode.
+// Don't structure your code this way!
 
-#include <TargetConditionals.h>
 #define FLOUI_IMPL
 #include "../floui.hpp"
 
