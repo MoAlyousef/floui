@@ -94,31 +94,31 @@ int val;
     self.view.frame = NSMakeRect(0, 0, 600, 400);
 #endif
     MainView(self, {
-                       Text(@"Counter")
-                           .center()
-                           .foreground(COLOR.whiteColor)
-                           .font([FONT boldSystemFontOfSize:30])
-                           .background(COLOR.purpleColor),
-                       Spacer(),
-                       VStack({
-                           Button(@"Increment")
-                               .action(self, @selector(increment))
-                               .filled()
-                               .background(COLOR.blueColor)
-                               .foreground(COLOR.whiteColor),
-                               Text(@"0").id("mytext"),
-                               dec_btn.foreground(COLOR.whiteColor)
-                                   .filled()
-                                   .background(COLOR.blueColor)
-                                   .action([=] {
-                                       val--;
-                                       Widget::from_id<Text>("mytext").text(
-                                           [NSString stringWithFormat:@"%d", val]);
-                                   }),
-                       }),
-                       Spacer(),
-                       Spacer(),
-                   });
+        Text(@"Counter")
+            .center()
+            .foreground(COLOR.whiteColor)
+            .font([FONT boldSystemFontOfSize:30])
+            .background(COLOR.purpleColor),
+        Spacer(),
+        VStack({
+            Button(@"Increment")
+                .action(self, @selector(increment))
+                .filled()
+                .background(COLOR.blueColor)
+                .foreground(COLOR.whiteColor),
+                Text(@"0").id("mytext"),
+                dec_btn.foreground(COLOR.whiteColor)
+                    .filled()
+                    .background(COLOR.blueColor)
+                    .action([=] {
+                        val--;
+                        Widget::from_id<Text>("mytext").text(
+                            [NSString stringWithFormat:@"%d", val]);
+                    }),
+        }),
+        Spacer(),
+        Spacer(),
+    });
 }
 - (void)increment {
     val++;
@@ -127,12 +127,12 @@ int val;
 @end
 
 #if TARGET_OS_IPHONE
-#define ARGV_T char
+using argv_type = char *[];
 #else
-#define ARGV_T const char
+using argv_type = const char *[];
 #endif
 
-int main(int argc, ARGV_T *argv[]) {
+int main(int argc, argv_type argv) {
     NSString *appDelegateClassName;
     AppDelegate *delegate;
     @autoreleasepool {
