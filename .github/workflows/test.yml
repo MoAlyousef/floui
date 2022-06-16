@@ -14,9 +14,9 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Build macOS
-      run: clang++ -std=c++17 test/main.mm -framework Cocoa
+      run: clang++ -std=c++17 test/main.mm -framework Cocoa -fobjc-arc -Wno-objc-method-access
 
     - name: Build ios
-      run: clang++ -std=c++17 -arch arm64 -isysroot $(xcrun --sdk iphoneos --show-sdk-path) -c test/main.mm
+      run: clang++ -std=c++17 -arch arm64 -isysroot $(xcrun --sdk iphoneos --show-sdk-path) -c test/main.mm -fobjc-arc -Wno-objc-method-access
 
       
