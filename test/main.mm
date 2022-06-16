@@ -52,7 +52,7 @@ NSWindow *win;
 - (void)scene:(UIScene *)scene
     willConnectToSession:(UISceneSession *)session
                  options:(UISceneConnectionOptions *)connectionOptions {
-    CGRect frame = [[UIScreen mainScreen] bounds];
+    auto frame = [[UIScreen mainScreen] bounds];
     self.window = [[UIWindow alloc] initWithFrame:frame];
     [self.window setRootViewController:[ViewController new]];
     [self.window setWindowScene:(UIWindowScene *)scene];
