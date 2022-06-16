@@ -443,7 +443,8 @@ DEFINE_STYLES(Spacer)
 
 MainView::MainView(OSVIEW *v) : Widget(v) {}
 
-MainView::MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l) : Widget([FlouiView new]) {
+MainView::MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l)
+    : Widget([FlouiView new]) {
     [vc.view addSubview:view];
     view.frame = vc.view.frame;
     for (auto e : l) {
