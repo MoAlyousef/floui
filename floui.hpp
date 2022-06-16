@@ -22,8 +22,8 @@
  SOFTWARE.
  */
 
-#ifndef floui_h
-#define floui_h
+#ifndef __FLOUI_H__
+#define __FLOUI_H__
 
 #include <TargetConditionals.h>
 #include <functional>
