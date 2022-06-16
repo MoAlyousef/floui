@@ -59,7 +59,7 @@
     widget &id(const char *val);
 
 #if TARGET_OS_OSX
-@interface MyView : NSView
+@interface FlouiView : NSView
 - (id)init;
 - (id)initWithFrame:(NSRect)rect;
 - (BOOL)isFlipped;
@@ -335,7 +335,7 @@ DEFINE_STYLES(HStack)
         return *this;                                                                              \
     }
 
-@implementation MyView
+@implementation FlouiView
 - (id)init {
     self = [super init];
     return self;
@@ -443,7 +443,7 @@ DEFINE_STYLES(Spacer)
 
 MainView::MainView(OSVIEW *v) : Widget(v) {}
 
-MainView::MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l) : Widget([MyView new]) {
+MainView::MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l) : Widget([FlouiView new]) {
     [vc.view addSubview:view];
     view.frame = vc.view.frame;
     for (auto e : l) {
