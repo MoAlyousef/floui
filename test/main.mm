@@ -37,7 +37,7 @@ NSWindow *win;
                                       backing:NSBackingStoreBuffered
                                         defer:NO];
     [win makeKeyAndOrderFront:nil];
-    [win setContentViewController:[[ViewController alloc] init]];
+    [win setContentViewController:[ViewController new]];
 }
 #else
 - (BOOL)application:(UIApplication *)application
@@ -135,11 +135,12 @@ int val;
 
 int main(int argc, ARGV_T *argv[]) {
     NSString *appDelegateClassName;
+    AppDelegate *delegate;
     @autoreleasepool {
         appDelegateClassName = NSStringFromClass([AppDelegate class]);
+        delegate = [AppDelegate new];
     }
 #if TARGET_OS_OSX
-    AppDelegate *delegate = [[AppDelegate alloc] init];
     [NSApplication sharedApplication].delegate = delegate;
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
     return NSApplicationMain(argc, argv);
