@@ -16,13 +16,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Build Macos
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: clang++ -std=c++17 test/main.mm
+    - name: Build macOS
+      run: clang++ -std=c++17 test/main.mm -framework Cocoa
 
     - name: Build ios
-      # Build your program with the given configuration
-      run: clang++ -std=c++17 -arch arm64 -isysroot $(xcrun --sdk iphoneos --show-sdk-path) test/main.mm
+      run: clang++ -std=c++17 -arch arm64 -isysroot $(xcrun --sdk iphoneos --show-sdk-path) -c test/main.mm
 
       
