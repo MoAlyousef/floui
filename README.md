@@ -71,3 +71,4 @@ Add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
 - Wrap more UIKit and AppKit controls.
 - Use proper layout constraints for the mainview to handle orientation changes. 
 - Fix verical alignment of the Text element on OSX. 
+- Remove NS cocoa stuff when catalyst becomes more usable on macOS.
