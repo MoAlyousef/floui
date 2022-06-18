@@ -20,39 +20,40 @@ You can downoload the floui.hpp header and add it to your xcode project. Remembe
 
 @implementation ViewController
 Button dec_btn(@"Decrement"); // since we want to use a C++ lambda
-int val;
+int val {0};
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    val = 0;
 #if TARGET_OS_OSX
     self.view.frame = NSMakeRect(0, 0, 600, 400);
 #endif
     MainView(self, {
         Text(@"Counter")
+            .size(600, 100)
             .center()
             .foreground(COLOR.whiteColor)
             .font([FONT boldSystemFontOfSize:30])
             .background(COLOR.purpleColor),
-        Spacer(),
+        Spacer().size(0, 50),
         VStack({
             Button(@"Increment")
                 .action(self, @selector(increment))
+                .size(0, 40)
                 .filled()
                 .background(COLOR.blueColor)
                 .foreground(COLOR.whiteColor),
-            Text(@"0").id("mytext"),
-            dec_btn
-                .foreground(COLOR.whiteColor)
+            Text(@"0").id("mytext").size(0, 50),
+            dec_btn.foreground(COLOR.whiteColor)
+                .size(0, 40)
                 .filled()
                 .background(COLOR.blueColor)
-                .action([=] { // modern C++ lambda syntax
+                .action([=] {
                     val--;
-                    Widget::from_id<Text>("mytext").text([NSString stringWithFormat:@"%d", val]);
+                    Widget::from_id<Text>("mytext")
+                        .text([NSString stringWithFormat:@"%d", val]);
                 }),
         }),
-        Spacer(),
-        Spacer(),
+        Spacer()
     });
 }
 -(void)increment {

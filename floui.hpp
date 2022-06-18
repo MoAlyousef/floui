@@ -56,7 +56,8 @@
 #define DECLARE_STYLES(widget)                                                                     \
     widget &background(OSCOLOR *col);                                                              \
     widget &tint(OSCOLOR *col);                                                                    \
-    widget &id(const char *val);
+    widget &id(const char *val);                                                                   \
+    widget &size(int w, int h);
 
 #if TARGET_OS_OSX
 @interface FlouiView : NSView
@@ -165,6 +166,13 @@ class HStack : public Widget {
     widget &widget::id(const char *val) {                                                          \
         widget_map[val] = view;                                                                    \
         return *this;                                                                              \
+    }                                                                                              \
+    widget &widget::size(int w, int h) {                                                           \
+        auto frame = view.frame;                                                                   \
+        frame.size.width = w;                                                                      \
+        frame.size.height = h;                                                                     \
+        view.frame = frame;                                                                        \
+        return *this;                                                                              \
     }
 
 @implementation Callback
@@ -261,23 +269,23 @@ DEFINE_STYLES(Spacer)
 
 MainView::MainView(UIView *v) : Widget(v) {}
 
-MainView::MainView(UIViewController *vc, std::initializer_list<Widget> l) : Widget([UIView new]) {
+MainView::MainView(UIViewController *vc, std::initializer_list<Widget> l)
+    : Widget([UIStackView new]) {
     [vc.view addSubview:view];
     view.frame = vc.view.frame;
+    [(UIStackView *)view setAxis:UILayoutConstraintAxisVertical];
+    [(UIStackView *)view setDistribution:UIStackViewDistributionFillEqually];
+    [(UIStackView *)view setAlignment:UIStackViewAlignmentCenter];
+    [(UIStackView *)view setSpacing:10];
     for (auto e : l) {
-        children.push_back((UIView *)e);
-    }
-    auto frame = view.frame;
-    auto x = 0;
-    auto y = 0;
-    auto count = children.size();
-    auto w = frame.size.width;
-    auto h = (frame.size.height) / count;
-    auto i = 0;
-    for (auto e : children) {
-        [view addSubview:e];
-        e.frame = CGRectMake(x, y + ((h + margins) * i), w, h);
-        i += 1;
+        auto w = (UIView *)e;
+        [(UIStackView *)view addArrangedSubview:w];
+        if (w.frame.size.width != 0)
+            [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
+        if (w.frame.size.height != 0)
+            [w.heightAnchor constraintEqualToConstant:w.frame.size.height].active = YES;
+        [w.leadingAnchor constraintEqualToAnchor:view.leadingAnchor constant:0].active = YES;
+        [w.trailingAnchor constraintEqualToAnchor:view.trailingAnchor constant:0].active = YES;
     }
 }
 
@@ -287,14 +295,18 @@ DEFINE_STYLES(MainView)
 
 VStack::VStack(UIView *v) : Widget(v) {}
 
-VStack::VStack(std::initializer_list<Widget> l)
-    : Widget([[UIStackView alloc] initWithFrame:[[UIScreen mainScreen] bounds]]) {
+VStack::VStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
     [(UIStackView *)view setAxis:UILayoutConstraintAxisVertical];
     [(UIStackView *)view setDistribution:UIStackViewDistributionFillEqually];
     [(UIStackView *)view setAlignment:UIStackViewAlignmentCenter];
     [(UIStackView *)view setSpacing:10];
     for (auto e : l) {
-        [(UIStackView *)view addArrangedSubview:(UIView *)e];
+        auto w = (UIView *)e;
+        [(UIStackView *)view addArrangedSubview:w];
+        if (w.frame.size.width != 0)
+            [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
+        if (w.frame.size.height != 0)
+            [w.heightAnchor constraintEqualToConstant:w.frame.size.height].active = YES;
     }
 }
 
@@ -304,14 +316,18 @@ DEFINE_STYLES(VStack)
 
 HStack::HStack(UIView *v) : Widget(v) {}
 
-HStack::HStack(std::initializer_list<Widget> l)
-    : Widget([[UIStackView alloc] initWithFrame:[[UIScreen mainScreen] bounds]]) {
+HStack::HStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
     [(UIStackView *)view setAxis:UILayoutConstraintAxisHorizontal];
     [(UIStackView *)view setDistribution:UIStackViewDistributionFillEqually];
     [(UIStackView *)view setAlignment:UIStackViewAlignmentCenter];
     [(UIStackView *)view setSpacing:10];
     for (auto e : l) {
-        [(UIStackView *)view addArrangedSubview:(UIView *)e];
+        auto w = (UIView *)e;
+        [(UIStackView *)view addArrangedSubview:w];
+        if (w.frame.size.width != 0)
+            [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
+        if (w.frame.size.height != 0)
+            [w.heightAnchor constraintEqualToConstant:w.frame.size.height].active = YES;
     }
 }
 
@@ -332,6 +348,13 @@ DEFINE_STYLES(HStack)
     }                                                                                              \
     widget &widget::id(const char *val) {                                                          \
         widget_map[val] = view;                                                                    \
+        return *this;                                                                              \
+    }                                                                                              \
+    widget &widget::size(int w, int h) {                                                           \
+        auto frame = view.frame;                                                                   \
+        frame.size.width = w;                                                                      \
+        frame.size.height = h;                                                                     \
+        view.frame = frame;                                                                        \
         return *this;                                                                              \
     }
 
@@ -374,10 +397,7 @@ Button::Button(OSVIEW *b) : Widget(b) {}
 
 Button::Button(NSString *label) : Widget([NSButton new]) { [(NSButton *)view setTitle:label]; }
 
-Button &Button::filled() {
-    ((NSButton *)view).layer.cornerRadius = 5;
-    return *this;
-}
+Button &Button::filled() { return *this; }
 
 Button &Button::action(std::function<void()> &&f) {
     cb_ = [[Callback alloc] initWithCb:f];
@@ -444,26 +464,23 @@ DEFINE_STYLES(Spacer)
 MainView::MainView(OSVIEW *v) : Widget(v) {}
 
 MainView::MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l)
-    : Widget([FlouiView new]) {
+    : Widget([NSStackView new]) {
     [vc.view addSubview:view];
     view.frame = vc.view.frame;
+    [(NSStackView *)view setOrientation:NSUserInterfaceLayoutOrientationVertical];
+    [(NSStackView *)view setDistribution:NSStackViewDistributionFillEqually];
+    [(NSStackView *)view setAlignment:NSLayoutAttributeCenterX];
     for (auto e : l) {
-        children.push_back((NSView *)e);
-    }
-    auto frame = view.frame;
-    auto x = 0;
-    auto y = 0;
-    auto count = children.size();
-    auto w = frame.size.width;
-    auto h = (frame.size.height) / count;
-    auto i = 0;
-    for (auto e : children) {
-        [view addSubview:e];
-        e.frame = CGRectMake(x, y + ((h + margins) * i), w, h);
-        i += 1;
+        auto w = (NSView *)e;
+        [(NSStackView *)view addArrangedSubview:w];
+        if (w.frame.size.width != 0)
+            [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
+        if (w.frame.size.height != 0)
+            [w.heightAnchor constraintEqualToConstant:w.frame.size.height].active = YES;
+        [w.leadingAnchor constraintEqualToAnchor:view.leadingAnchor constant:0].active = YES;
+        [w.trailingAnchor constraintEqualToAnchor:view.trailingAnchor constant:0].active = YES;
     }
 }
-
 MainView::operator OSVIEW *() const { return view; }
 
 DEFINE_STYLES(MainView)
@@ -476,7 +493,12 @@ VStack::VStack(std::initializer_list<Widget> l) : Widget([NSStackView new]) {
     [(NSStackView *)view setAlignment:NSLayoutAttributeCenterX];
     [(NSStackView *)view setSpacing:10];
     for (auto e : l) {
-        [(NSStackView *)view addArrangedSubview:(NSView *)e];
+        auto w = (NSView *)e;
+        [(NSStackView *)view addArrangedSubview:w];
+        if (w.frame.size.width != 0)
+            [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
+        if (w.frame.size.height != 0)
+            [w.heightAnchor constraintEqualToConstant:w.frame.size.height].active = YES;
     }
 }
 
@@ -492,7 +514,12 @@ HStack::HStack(std::initializer_list<Widget> l) : Widget([NSStackView new]) {
     [(NSStackView *)view setAlignment:NSLayoutAttributeCenterY];
     [(NSStackView *)view setSpacing:10];
     for (auto e : l) {
-        [(NSStackView *)view addArrangedSubview:(NSView *)e];
+        auto w = (NSView *)e;
+        [(NSStackView *)view addArrangedSubview:w];
+        if (w.frame.size.width != 0)
+            [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
+        if (w.frame.size.height != 0)
+            [w.heightAnchor constraintEqualToConstant:w.frame.size.height].active = YES;
     }
 }
 
