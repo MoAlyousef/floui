@@ -36,6 +36,7 @@
 #define OSVIEW UIView
 #define OSBUTTON UIButton
 #define OSLABEL UILabel
+#define OSTEXTFIELD UITextField
 #define OSSTACKVIEW UIStackView
 #define OSCOLOR UIColor
 #define OSFONT UIFont
@@ -45,6 +46,7 @@
 #define OSVIEW NSView
 #define OSBUTTON NSButton
 #define OSLABEL NSTextField
+#define OSTEXTFIELD NSTextField
 #define OSSTACKVIEW NSStackView
 #define OSCOLOR NSColor
 #define OSFONT NSFont
@@ -116,6 +118,19 @@ class Text : public Widget {
     DECLARE_STYLES(Text)
 };
 
+class TextField : public Widget {
+  public:
+    explicit TextField(OSVIEW *b);
+    TextField();
+    TextField &center();
+    TextField &text(NSString *s);
+    NSString *text() const;
+    TextField &font(OSFONT *f);
+    TextField &foreground(OSCOLOR *c);
+    explicit operator OSTEXTFIELD *() const;
+    DECLARE_STYLES(TextField)
+};
+
 class Spacer : public Widget {
   public:
     explicit Spacer(OSVIEW *b);
@@ -127,6 +142,7 @@ class MainView : public Widget {
   public:
     explicit MainView(OSVIEW *);
     MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l);
+    MainView &spacing(int val);
     explicit operator OSVIEW *() const;
     DECLARE_STYLES(MainView)
 };
@@ -135,6 +151,7 @@ class VStack : public Widget {
   public:
     explicit VStack(OSVIEW *v);
     explicit VStack(std::initializer_list<Widget> l);
+    VStack &spacing(int val);
     explicit operator OSSTACKVIEW *() const;
     DECLARE_STYLES(VStack)
 };
@@ -143,6 +160,7 @@ class HStack : public Widget {
   public:
     explicit HStack(OSVIEW *v);
     explicit HStack(std::initializer_list<Widget> l);
+    HStack &spacing(int val);
     explicit operator OSSTACKVIEW *() const;
     DECLARE_STYLES(HStack)
 };
@@ -258,6 +276,36 @@ Text::operator UILabel *() const { return (UILabel *)view; }
 
 DEFINE_STYLES(Text)
 
+TextField::TextField(UIView *b) : Widget(b) {}
+
+TextField::TextField() : Widget([UITextField new]) {
+    [(UITextField *)view setTextColor:UIColor.blackColor];
+}
+
+TextField &TextField::foreground(UIColor *c) {
+    [(UITextField *)view setTextColor:c];
+    return *this;
+}
+
+TextField &TextField::center() {
+    [(UITextField *)view setTextAlignment:NSTextAlignmentCenter];
+    return *this;
+}
+
+TextField &TextField::text(NSString *s) {
+    [(UITextField *)view setText:s];
+    return *this;
+}
+
+TextField &TextField::font(UIFont *font) {
+    [(UITextField *)view setFont:font];
+    return *this;
+}
+
+TextField::operator UITextField *() const { return (UITextField *)view; }
+
+DEFINE_STYLES(TextField)
+
 Spacer::Spacer(UIView *b) : Widget(b) {}
 
 Spacer::Spacer() : Widget([UIView new]) {}
@@ -286,6 +334,11 @@ MainView::MainView(UIViewController *vc, std::initializer_list<Widget> l)
     }
 }
 
+MainView &MainView::spacing(int val) {
+    [(UIStackView *)view setSpacing:val];
+    return *this;
+}
+
 MainView::operator UIView *() const { return view; }
 
 DEFINE_STYLES(MainView)
@@ -307,6 +360,11 @@ VStack::VStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
     }
 }
 
+VStack &VStack::spacing(int val) {
+    [(UIStackView *)view setSpacing:val];
+    return *this;
+}
+
 VStack::operator UIStackView *() const { return (UIStackView *)view; }
 
 DEFINE_STYLES(VStack)
@@ -326,6 +384,11 @@ HStack::HStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
         if (w.frame.size.height != 0)
             [w.heightAnchor constraintEqualToConstant:w.frame.size.height].active = YES;
     }
+}
+
+HStack &HStack::spacing(int val) {
+    [(UIStackView *)view setSpacing:val];
+    return *this;
 }
 
 HStack::operator UIStackView *() const { return (UIStackView *)view; }
@@ -451,6 +514,38 @@ Text &Text::font(OSFONT *font) {
 Text::operator OSLABEL *() const { return (NSTextField *)view; }
 
 DEFINE_STYLES(Text)
+
+TextField::TextField(OSVIEW *b) : Widget(b) {}
+
+TextField::TextField() : Widget([NSTextField new]) {}
+
+TextField &TextField::foreground(OSCOLOR *c) {
+    [(NSTextField *)view setTextColor:c];
+    return *this;
+}
+
+TextField &TextField::center() {
+    [(NSTextField *)view setAlignment:NSTextAlignmentCenter];
+    return *this;
+}
+
+TextField &TextField::text(NSString *s) {
+    [(NSTextField *)view setStringValue:s];
+    return *this;
+}
+
+NSString *TextField::text() const {
+    return [(NSTextField *)view stringValue];
+}
+
+TextField &TextField::font(OSFONT *font) {
+    [(NSTextField *)view setFont:font];
+    return *this;
+}
+
+TextField::operator NSTextField *() const { return (NSTextField *)view; }
+
+DEFINE_STYLES(TextField)
 
 Spacer::Spacer(OSVIEW *b) : Widget(b) {}
 
