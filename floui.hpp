@@ -124,9 +124,6 @@ class Spacer : public Widget {
 };
 
 class MainView : public Widget {
-    std::vector<OSVIEW *> children = {};
-    int margins = 10;
-
   public:
     explicit MainView(OSVIEW *);
     MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l);
