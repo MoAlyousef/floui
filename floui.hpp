@@ -33,31 +33,31 @@
 
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
-#define OSVIEW UIView
-#define OSBUTTON UIButton
-#define OSLABEL UILabel
-#define OSTEXTFIELD UITextField
-#define OSSTACKVIEW UIStackView
-#define OSCOLOR UIColor
-#define OSFONT UIFont
-#define OSVIEWCONTROLLER UIViewController
+using OSView = UIView;
+using OSButton = UIButton;
+using OSLabel = UILabel;
+using OSTextField = UITextField;
+using OSStackView = UIStackView;
+using OSColor = UIColor;
+using OSFont = UIFont;
+using OSViewController = UIViewController;
 #elif TARGET_OS_OSX
 #import <Cocoa/Cocoa.h>
-#define OSVIEW NSView
-#define OSBUTTON NSButton
-#define OSLABEL NSTextField
-#define OSTEXTFIELD NSTextField
-#define OSSTACKVIEW NSStackView
-#define OSCOLOR NSColor
-#define OSFONT NSFont
-#define OSVIEWCONTROLLER NSViewController
+using OSView = NSView;
+using OSButton = NSButton;
+using OSLabel = NSTextField;
+using OSTextField = NSTextField;
+using OSStackView = NSStackView;
+using OSColor = NSColor;
+using OSFont = NSFont;
+using OSViewController = NSViewController;
 #else
 #error "Unsupported platform"
 #endif // TARGET_OS_IPHONE
 
 #define DECLARE_STYLES(widget)                                                                     \
-    widget &background(OSCOLOR *col);                                                              \
-    widget &tint(OSCOLOR *col);                                                                    \
+    widget &background(OSColor *col);                                                              \
+    widget &tint(OSColor *col);                                                                    \
     widget &id(const char *val);                                                                   \
     widget &size(int w, int h);
 
@@ -79,12 +79,12 @@
 
 class Widget {
   protected:
-    static inline std::unordered_map<const char *, OSVIEW *> widget_map{};
-    OSVIEW *view = nullptr;
+    static inline std::unordered_map<const char *, OSView *> widget_map{};
+    OSView *view = nullptr;
 
   public:
-    explicit Widget(OSVIEW *v);
-    explicit operator OSVIEW *() const;
+    explicit Widget(OSView *v);
+    explicit operator OSView *() const;
     template <typename T, typename = std::enable_if_t<std::is_base_of_v<Widget, T>>>
     static T from_id(const char *v) {
         return T{widget_map[v]};
@@ -96,72 +96,72 @@ class Button : public Widget {
     Callback *cb_ = nullptr;
 
   public:
-    explicit Button(OSVIEW *b);
+    explicit Button(OSView *b);
     explicit Button(NSString *label);
     Button &filled();
     Button &action(std::function<void()> &&f);
     Button &action(::id target, SEL s);
-    Button &foreground(OSCOLOR *c);
-    explicit operator OSBUTTON *() const;
+    Button &foreground(OSColor *c);
+    explicit operator OSButton *() const;
     DECLARE_STYLES(Button)
 };
 
 class Text : public Widget {
   public:
-    explicit Text(OSVIEW *b);
+    explicit Text(OSView *b);
     explicit Text(NSString *s);
     Text &center();
     Text &text(NSString *s);
-    Text &font(OSFONT *f);
-    Text &foreground(OSCOLOR *c);
-    explicit operator OSLABEL *() const;
+    Text &font(OSFont *f);
+    Text &foreground(OSColor *c);
+    explicit operator OSLabel *() const;
     DECLARE_STYLES(Text)
 };
 
 class TextField : public Widget {
   public:
-    explicit TextField(OSVIEW *b);
+    explicit TextField(OSView *b);
     TextField();
     TextField &center();
     TextField &text(NSString *s);
     NSString *text() const;
-    TextField &font(OSFONT *f);
-    TextField &foreground(OSCOLOR *c);
-    explicit operator OSTEXTFIELD *() const;
+    TextField &font(OSFont *f);
+    TextField &foreground(OSColor *c);
+    explicit operator OSTextField *() const;
     DECLARE_STYLES(TextField)
 };
 
 class Spacer : public Widget {
   public:
-    explicit Spacer(OSVIEW *b);
+    explicit Spacer(OSView *b);
     Spacer();
     DECLARE_STYLES(Spacer)
 };
 
 class MainView : public Widget {
   public:
-    explicit MainView(OSVIEW *);
-    MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l);
+    explicit MainView(OSView *);
+    MainView(OSViewController *vc, std::initializer_list<Widget> l);
     MainView &spacing(int val);
-    explicit operator OSVIEW *() const;
+    explicit operator OSView *() const;
     DECLARE_STYLES(MainView)
 };
 
 class VStack : public Widget {
   public:
-    explicit VStack(OSVIEW *v);
+    explicit VStack(OSView *v);
     explicit VStack(std::initializer_list<Widget> l);
     VStack &spacing(int val);
-    explicit operator OSSTACKVIEW *() const;
+    explicit operator OSStackView *() const;
     DECLARE_STYLES(VStack)
 };
 
 class HStack : public Widget {
   public:
-    explicit HStack(OSVIEW *v);
+    explicit HStack(OSView *v);
     explicit HStack(std::initializer_list<Widget> l);
     HStack &spacing(int val);
-    explicit operator OSSTACKVIEW *() const;
+    explicit operator OSStackView *() const;
     DECLARE_STYLES(HStack)
 };
 
@@ -207,11 +207,11 @@ class HStack : public Widget {
 
 Widget::Widget(UIView *v) : view(v) {}
 
-Widget::operator OSVIEW *() const { return view; }
+Widget::operator OSView *() const { return view; }
 
 DEFINE_STYLES(Widget)
 
-Button::Button(OSVIEW *b) : Widget(b) {}
+Button::Button(OSView *b) : Widget(b) {}
 
 Button::Button(NSString *label) : Widget([UIButton buttonWithType:UIButtonTypeCustom]) {
     [(UIButton *)view setTitle:label forState:UIControlStateNormal];
@@ -398,11 +398,11 @@ DEFINE_STYLES(HStack)
 #else
 // cococa stuff
 #define DEFINE_STYLES(widget)                                                                      \
-    widget &widget::background(OSCOLOR *col) {                                                     \
+    widget &widget::background(OSColor *col) {                                                     \
         view.layer.backgroundColor = col.CGColor;                                                  \
         return *this;                                                                              \
     }                                                                                              \
-    widget &widget::tint(OSCOLOR *col) {                                                           \
+    widget &widget::tint(OSColor *col) {                                                           \
         (void)col;                                                                                 \
         return *this;                                                                              \
     }                                                                                              \
@@ -447,13 +447,13 @@ DEFINE_STYLES(HStack)
 }
 @end
 
-Widget::Widget(OSVIEW *v) : view(v) { view.wantsLayer = YES; }
+Widget::Widget(OSView *v) : view(v) { view.wantsLayer = YES; }
 
-Widget::operator OSVIEW *() const { return view; }
+Widget::operator OSView *() const { return view; }
 
 DEFINE_STYLES(Widget)
 
-Button::Button(OSVIEW *b) : Widget(b) {}
+Button::Button(OSView *b) : Widget(b) {}
 
 Button::Button(NSString *label) : Widget([NSButton new]) { [(NSButton *)view setTitle:label]; }
 
@@ -472,16 +472,16 @@ Button &Button::action(::id target, SEL s) {
     return *this;
 }
 
-Button::operator OSBUTTON *() const { return (OSBUTTON *)view; }
+Button::operator OSButton *() const { return (OSButton *)view; }
 
-Button &Button::foreground(OSCOLOR *c) {
+Button &Button::foreground(OSColor *c) {
     ((NSButton *)view).contentTintColor = c;
     return *this;
 }
 
 DEFINE_STYLES(Button)
 
-Text::Text(OSVIEW *b) : Widget(b) {}
+Text::Text(OSView *b) : Widget(b) {}
 
 Text::Text(NSString *s) : Widget([NSTextField new]) {
     [(NSTextField *)view setBezeled:NO];
@@ -491,7 +491,7 @@ Text::Text(NSString *s) : Widget([NSTextField new]) {
     [(NSTextField *)view setStringValue:s];
 }
 
-Text &Text::foreground(OSCOLOR *c) {
+Text &Text::foreground(OSColor *c) {
     [(NSTextField *)view setTextColor:c];
     return *this;
 }
@@ -506,20 +506,20 @@ Text &Text::text(NSString *s) {
     return *this;
 }
 
-Text &Text::font(OSFONT *font) {
+Text &Text::font(OSFont *font) {
     [(NSTextField *)view setFont:font];
     return *this;
 }
 
-Text::operator OSLABEL *() const { return (NSTextField *)view; }
+Text::operator OSLabel *() const { return (NSTextField *)view; }
 
 DEFINE_STYLES(Text)
 
-TextField::TextField(OSVIEW *b) : Widget(b) {}
+TextField::TextField(OSView *b) : Widget(b) {}
 
 TextField::TextField() : Widget([NSTextField new]) {}
 
-TextField &TextField::foreground(OSCOLOR *c) {
+TextField &TextField::foreground(OSColor *c) {
     [(NSTextField *)view setTextColor:c];
     return *this;
 }
@@ -538,7 +538,7 @@ NSString *TextField::text() const {
     return [(NSTextField *)view stringValue];
 }
 
-TextField &TextField::font(OSFONT *font) {
+TextField &TextField::font(OSFont *font) {
     [(NSTextField *)view setFont:font];
     return *this;
 }
@@ -547,15 +547,15 @@ TextField::operator NSTextField *() const { return (NSTextField *)view; }
 
 DEFINE_STYLES(TextField)
 
-Spacer::Spacer(OSVIEW *b) : Widget(b) {}
+Spacer::Spacer(OSView *b) : Widget(b) {}
 
 Spacer::Spacer() : Widget([NSView new]) {}
 
 DEFINE_STYLES(Spacer)
 
-MainView::MainView(OSVIEW *v) : Widget(v) {}
+MainView::MainView(OSView *v) : Widget(v) {}
 
-MainView::MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l)
+MainView::MainView(OSViewController *vc, std::initializer_list<Widget> l)
     : Widget([NSStackView new]) {
     [vc.view addSubview:view];
     view.frame = vc.view.frame;
@@ -573,11 +573,11 @@ MainView::MainView(OSVIEWCONTROLLER *vc, std::initializer_list<Widget> l)
         [w.trailingAnchor constraintEqualToAnchor:view.trailingAnchor constant:0].active = YES;
     }
 }
-MainView::operator OSVIEW *() const { return view; }
+MainView::operator OSView *() const { return view; }
 
 DEFINE_STYLES(MainView)
 
-VStack::VStack(OSVIEW *v) : Widget(v) {}
+VStack::VStack(OSView *v) : Widget(v) {}
 
 VStack::VStack(std::initializer_list<Widget> l) : Widget([NSStackView new]) {
     [(NSStackView *)view setOrientation:NSUserInterfaceLayoutOrientationVertical];
@@ -594,11 +594,11 @@ VStack::VStack(std::initializer_list<Widget> l) : Widget([NSStackView new]) {
     }
 }
 
-VStack::operator OSSTACKVIEW *() const { return (NSStackView *)view; }
+VStack::operator OSStackView *() const { return (NSStackView *)view; }
 
 DEFINE_STYLES(VStack)
 
-HStack::HStack(OSVIEW *v) : Widget(v) {}
+HStack::HStack(OSView *v) : Widget(v) {}
 
 HStack::HStack(std::initializer_list<Widget> l) : Widget([NSStackView new]) {
     [(NSStackView *)view setOrientation:NSUserInterfaceLayoutOrientationHorizontal];
@@ -615,7 +615,7 @@ HStack::HStack(std::initializer_list<Widget> l) : Widget([NSStackView new]) {
     }
 }
 
-HStack::operator OSSTACKVIEW *() const { return (NSStackView *)view; }
+HStack::operator OSStackView *() const { return (NSStackView *)view; }
 
 DEFINE_STYLES(HStack)
 
