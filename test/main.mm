@@ -72,11 +72,11 @@ NSWindow *win;
 #endif
 
 #if TARGET_OS_IPHONE
-using Font = UIFont;
-using Color = UIColor;
+#define FONT UIFont
+#define COLOR UIColor
 #else
-using Font = NSFont;
-using Color = NSColor;
+#define FONT NSFont
+#define COLOR NSColor
 #endif
 
 @implementation ViewController
@@ -97,22 +97,22 @@ int val {0};
             Text(@"Counter")
                 .size(600, 100)
                 .center()
-                .foreground(Color.whiteColor)
-                .font([Font boldSystemFontOfSize:30])
-                .background(Color.purpleColor),
+                .foreground(COLOR.whiteColor)
+                .font([FONT boldSystemFontOfSize:30])
+                .background(COLOR.purpleColor),
             Spacer().size(0, 50),
             VStack({
                 Button(@"Increment")
                     .action(self, @selector(increment))
                     .size(0, 40)
                     .filled()
-                    .background(Color.blueColor)
-                    .foreground(Color.whiteColor),
+                    .background(COLOR.blueColor)
+                    .foreground(COLOR.whiteColor),
                 Text(@"0").id("mytext").size(0, 50),
-                dec_btn.foreground(Color.whiteColor)
+                dec_btn.foreground(COLOR.whiteColor)
                         .size(0, 40)
                         .filled()
-                        .background(Color.blueColor)
+                        .background(COLOR.blueColor)
                         .action([=] {
                             val--;
                             Widget::from_id<Text>("mytext").text(

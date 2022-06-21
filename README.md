@@ -11,11 +11,11 @@ You can downoload the floui.hpp header and add it to your xcode project. Remembe
 #include "floui.hpp"
 
 #if TARGET_OS_IPHONE
-using Font = UIFont;
-using Color = UIColor;
+#define FONT UIFont
+#define COLOR UIColor
 #else
-using Font = NSFont;
-using Color = NSColor;
+#define FONT NSFont
+#define COLOR NSColor
 #endif
 
 @implementation ViewController
