@@ -125,9 +125,9 @@ Java_com_example_myapplication_MainActivity_mainView(
         JNIEnv* env,
         jobject main_activity, jobject view) {
 
-    auto fvc = new FlouiViewController(env, main_activity, view);
+    FlouiViewController controller(env, m, view);
     
-    auto main_view = MainView(fvc, {
+    auto mainView = MainView(&controller, {
         Button("Increment").action([=](Widget) {
             val++;
             Widget::from_id<Text>("val").text(std::to_string(val));
