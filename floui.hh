@@ -78,7 +78,7 @@ class Widget {
 };
 
 class Button : public Widget {
-    void *cb_;
+    void *cb_ = nullptr;
 
   public:
     explicit Button(void *b);
@@ -395,7 +395,7 @@ MainView::MainView(void *vc, std::initializer_list<Widget> l) : Widget(MainView_
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
     c::env->CallVoidMethod(c::layout, addview, v);
-    for (auto e : l) {
+    for (auto &e : l) {
         c::env->CallVoidMethod(v, addview, (jobject)e.inner());
     }
 }
@@ -422,7 +422,7 @@ VStack::VStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
     c::env->CallVoidMethod(c::layout, addview, v);
-    for (auto e : l) {
+    for (auto &e : l) {
         c::env->CallVoidMethod(v, addview, (jobject)e.inner());
     }
 }
@@ -447,7 +447,7 @@ HStack::HStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
     c::env->CallVoidMethod(c::layout, addview, v);
-    for (auto e : l) {
+    for (auto &e : l) {
         c::env->CallVoidMethod(v, addview, (jobject)e.inner());
     }
 }
@@ -651,7 +651,7 @@ MainView::MainView(void *fvc, std::initializer_list<Widget> l)
     [v setDistribution:UIStackViewDistributionFillEqually];
     [v setAlignment:UIStackViewAlignmentCenter];
     [v setSpacing:10];
-    for (auto e : l) {
+    for (auto &e : l) {
         auto w = (__bridge UIView *)e.inner();
         [v addArrangedSubview:w];
         if (w.frame.size.width != 0)
@@ -680,7 +680,7 @@ VStack::VStack(std::initializer_list<Widget> l)
     [v setDistribution:UIStackViewDistributionFillEqually];
     [v setAlignment:UIStackViewAlignmentCenter];
     [v setSpacing:10];
-    for (auto e : l) {
+    for (auto &e : l) {
         auto w = (__bridge UIView *)e.inner();
         [v addArrangedSubview:w];
         if (w.frame.size.width != 0)
@@ -707,7 +707,7 @@ HStack::HStack(std::initializer_list<Widget> l)
     [v setDistribution:UIStackViewDistributionFillEqually];
     [v setAlignment:UIStackViewAlignmentCenter];
     [v setSpacing:10];
-    for (auto e : l) {
+    for (auto &e : l) {
         auto w = (__bridge UIView *)e.inner();
         [v addArrangedSubview:w];
         if (w.frame.size.width != 0)
@@ -894,7 +894,7 @@ MainView::MainView(void *fvc, std::initializer_list<Widget> l)
     [v setOrientation:NSUserInterfaceLayoutOrientationVertical];
     [v setDistribution:NSStackViewDistributionFillEqually];
     [v setAlignment:NSLayoutAttributeCenterX];
-    for (auto e : l) {
+    for (auto &e : l) {
         auto w = (__bridge NSView *)e.inner();
         [v addArrangedSubview:w];
         if (w.frame.size.width != 0)
@@ -917,7 +917,7 @@ VStack::VStack(std::initializer_list<Widget> l)
     [v setDistribution:NSStackViewDistributionFillEqually];
     [v setAlignment:NSLayoutAttributeCenterX];
     [v setSpacing:10];
-    for (auto e : l) {
+    for (auto &e : l) {
         auto w = (__bridge NSView *)e.inner();
         [v addArrangedSubview:w];
         if (w.frame.size.width != 0)
@@ -938,7 +938,7 @@ HStack::HStack(std::initializer_list<Widget> l)
     [v setDistribution:NSStackViewDistributionFillEqually];
     [v setAlignment:NSLayoutAttributeCenterY];
     [v setSpacing:10];
-    for (auto e : l) {
+    for (auto &e : l) {
         auto w = (__bridge NSView *)e.inner();
         [v addArrangedSubview:w];
         if (w.frame.size.width != 0)
