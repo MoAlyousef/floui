@@ -7,16 +7,21 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  apple:
     runs-on: macos-latest
-
     steps:
     - uses: actions/checkout@v3
-
     - name: Build macOS
       run: clang++ -std=c++17 test/main.mm -framework Cocoa -fobjc-arc -Wno-objc-method-access -lobjc
-
     - name: Build ios
       run: clang++ -std=c++17 -arch arm64 -isysroot $(xcrun --sdk iphoneos --show-sdk-path) test/main.mm -fobjc-arc -lobjc -framework UIKit
 
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Download jdk
+      run: sudo apt-get install openjdk-8-jdk
+    - name: Build jni
+      run: g++ -I${JAVA_HOME}/include -c test/jni.cpp 
       
