@@ -50,9 +50,9 @@ void floui_jni_handle_events(void *view);
 
 #else // Android
 #ifdef __OBJC__
-#include <CoreFoundation/CoreFoundation.h>
 #include <TargetConditionals.h>
 #if TARGET_OS_OSX
+#import <Cocoa/Cocoa.h>
 @interface FlouiView : NSView
 - (id)init;
 - (id)initWithFrame:(NSRect)rect;
