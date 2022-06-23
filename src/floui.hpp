@@ -78,7 +78,8 @@ class Widget {
 };
 
 class Button : public Widget {
-  void *cb_;
+    void *cb_;
+
   public:
     explicit Button(void *b);
     explicit Button(const std::string &label);
@@ -399,9 +400,7 @@ MainView::MainView(void *vc, std::initializer_list<Widget> l) : Widget(MainView_
     }
 }
 
-MainView &MainView::spacing(int space) {
-  return *this;
-}
+MainView &MainView::spacing(int space) { return *this; }
 
 DEFINE_STYLES(MainView)
 
@@ -428,10 +427,7 @@ VStack::VStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
     }
 }
 
-VStack &VStack::spacing(int space) {
-  return *this;
-}
-
+VStack &VStack::spacing(int space) { return *this; }
 
 DEFINE_STYLES(VStack)
 
@@ -456,9 +452,7 @@ HStack::HStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
     }
 }
 
-HStack &HStack::spacing(int space) {
-  return *this;
-}
+HStack &HStack::spacing(int space) { return *this; }
 
 DEFINE_STYLES(HStack)
 
@@ -533,7 +527,8 @@ DEFINE_STYLES(Widget)
 
 Button::Button(void *b) : Widget(b) {}
 
-Button::Button(const std::string &label) : Widget((void *)CFBridgingRetain([UIButton buttonWithType:UIButtonTypeCustom])) {
+Button::Button(const std::string &label)
+    : Widget((void *)CFBridgingRetain([UIButton buttonWithType:UIButtonTypeCustom])) {
     auto v = (__bridge UIButton *)view;
     [v setTitle:[NSString stringWithUTF8String:label.c_str()] forState:UIControlStateNormal];
     [v setTitleColor:UIColor.blueColor forState:UIControlStateNormal];
@@ -547,7 +542,9 @@ Button &Button::filled() {
 Button &Button::action(std::function<void(Widget &)> &&f) {
     auto v = (__bridge UIButton *)view;
     cb_ = (void *)CFBridgingRetain([[Callback alloc] initWithTarget:view Cb:f]);
-    [v addTarget:(__bridge Callback *)cb_ action:@selector(invoke) forControlEvents:UIControlEventTouchUpInside];
+    [v addTarget:(__bridge Callback *)cb_
+                  action:@selector(invoke)
+        forControlEvents:UIControlEventTouchUpInside];
     return *this;
 }
 
@@ -644,7 +641,8 @@ DEFINE_STYLES(Spacer)
 
 MainView::MainView(void *v) : Widget(v) {}
 
-MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetain([UIStackView new])) {
+MainView::MainView(void *fvc, std::initializer_list<Widget> l)
+    : Widget((void *)CFBridgingRetain([UIStackView new])) {
     auto v = (__bridge UIStackView *)view;
     auto vc = (__bridge UIViewController *)fvc;
     [vc.view addSubview:v];
@@ -675,7 +673,8 @@ DEFINE_STYLES(MainView)
 
 VStack::VStack(void *v) : Widget(v) {}
 
-VStack::VStack(std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetain([UIStackView new])) {
+VStack::VStack(std::initializer_list<Widget> l)
+    : Widget((void *)CFBridgingRetain([UIStackView new])) {
     auto v = (__bridge UIStackView *)view;
     [v setAxis:UILayoutConstraintAxisVertical];
     [v setDistribution:UIStackViewDistributionFillEqually];
@@ -701,7 +700,8 @@ DEFINE_STYLES(VStack)
 
 HStack::HStack(void *v) : Widget(v) {}
 
-HStack::HStack(std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetain([UIStackView new])) {
+HStack::HStack(std::initializer_list<Widget> l)
+    : Widget((void *)CFBridgingRetain([UIStackView new])) {
     auto v = (__bridge UIStackView *)view;
     [v setAxis:UILayoutConstraintAxisHorizontal];
     [v setDistribution:UIStackViewDistributionFillEqually];
@@ -885,7 +885,8 @@ DEFINE_STYLES(Spacer)
 
 MainView::MainView(void *v) : Widget(v) {}
 
-MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetain([NSStackView new])) {
+MainView::MainView(void *fvc, std::initializer_list<Widget> l)
+    : Widget((void *)CFBridgingRetain([NSStackView new])) {
     auto vc = (__bridge NSViewController *)fvc;
     auto v = (__bridge NSStackView *)view;
     [vc.view addSubview:v];
@@ -909,7 +910,8 @@ DEFINE_STYLES(MainView)
 
 VStack::VStack(void *v) : Widget(v) {}
 
-VStack::VStack(std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetain([NSStackView new])) {
+VStack::VStack(std::initializer_list<Widget> l)
+    : Widget((void *)CFBridgingRetain([NSStackView new])) {
     auto v = (__bridge NSStackView *)view;
     [v setOrientation:NSUserInterfaceLayoutOrientationVertical];
     [v setDistribution:NSStackViewDistributionFillEqually];
@@ -929,7 +931,8 @@ DEFINE_STYLES(VStack)
 
 HStack::HStack(void *v) : Widget(v) {}
 
-HStack::HStack(std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetain([NSStackView new])) {
+HStack::HStack(std::initializer_list<Widget> l)
+    : Widget((void *)CFBridgingRetain([NSStackView new])) {
     auto v = (__bridge NSStackView *)view;
     [v setOrientation:NSUserInterfaceLayoutOrientationHorizontal];
     [v setDistribution:NSStackViewDistributionFillEqually];
