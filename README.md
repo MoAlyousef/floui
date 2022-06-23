@@ -1,5 +1,5 @@
 # floui
-floui, pronounced "flowy", is a single header C++ lib inspired by SwiftUI, which wraps native iOS and Android controls/widgets.
+floui, pronounced "flowy", is a single header C++ lib inspired by SwiftUI, which wraps native iOS and Android controls/widgets, and integrates into the de facto build environments of each platform (XCode and Android Studio).
 
 ## Usage
 
