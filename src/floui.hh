@@ -396,7 +396,7 @@ MainView::MainView(void *vc, std::initializer_list<Widget> l) : Widget(MainView_
                                        "(Landroid/view/View;)V");
     c::env->CallVoidMethod(c::layout, addview, v);
     for (auto e : l) {
-        c::env->CallVoidMethod((jobject)view, addview, (jobject)e.inner());
+        c::env->CallVoidMethod(v, addview, (jobject)e.inner());
     }
 }
 
@@ -423,7 +423,7 @@ VStack::VStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
                                        "(Landroid/view/View;)V");
     c::env->CallVoidMethod(c::layout, addview, v);
     for (auto e : l) {
-        c::env->CallVoidMethod((jobject)view, addview, (jobject)e.inner());
+        c::env->CallVoidMethod(v, addview, (jobject)e.inner());
     }
 }
 
@@ -448,7 +448,7 @@ HStack::HStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
                                        "(Landroid/view/View;)V");
     c::env->CallVoidMethod(c::layout, addview, v);
     for (auto e : l) {
-        c::env->CallVoidMethod((jobject)view, addview, (jobject)e.inner());
+        c::env->CallVoidMethod(v, addview, (jobject)e.inner());
     }
 }
 

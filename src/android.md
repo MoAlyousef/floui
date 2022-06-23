@@ -7,14 +7,11 @@ Assuming your application is called myapplication:
 package com.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
-import android.app.ActionBar;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
-
-import com.example.myapplication.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     static {
@@ -26,12 +23,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        ConstraintLayout root = binding.getRoot();
-        setContentView(root);
-        mainView(root);
-        LinearLayout view = (LinearLayout) mainView(root);
-        view.getLayoutParams().width = LinearLayout.LayoutParams.MATCH_PARENT;
+        setContentView(R.layout.activity_main);
+        LinearLayout v = (LinearLayout) mainView(findViewById(R.id.activity_main));
+        v.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
     }
     public native View mainView(View view);
     public native void handleEvent(View view);
@@ -44,13 +38,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 }
 ```
 
-3- Ensure your build.gradle (app) has the:
-```gradle
-    buildFeatures {
-        viewBinding true
-    }
-```
-After the externalNativeBuild.
+3- In your activity_main.xml, give your activity_main an id:
+![image](https://user-images.githubusercontent.com/37966791/175358265-9d13c0b3-0655-4c30-8bd9-e36ac5dab7d8.png)
+Here we call it "activity_main", since we'll be using findViewById(R.id.activity_main).
 
 4- In your native-lib.cpp, replace with this boilerplate:
 ```cpp
@@ -65,7 +55,9 @@ extern "C" JNIEXPORT jobject JNICALL
 Java_com_example_myapplication_MainActivity_mainView(
         JNIEnv* env,
         jobject main_activity, jobject view) {
+
     auto fvc = new FlouiViewController(env, main_activity, view);
+    
     auto main_view = MainView(fvc, {
         Button("Increment").action([=](Widget) {
             val++;
@@ -77,6 +69,7 @@ Java_com_example_myapplication_MainActivity_mainView(
             Widget::from_id<Text>("val").text(std::to_string(val));
         })
     });
+    
     return (jobject) main_view.inner();
 }
 extern "C"
@@ -84,11 +77,11 @@ JNIEXPORT void JNICALL
 Java_com_example_myapplication_MainActivity_handleEvent(JNIEnv *env, jobject thiz, jobject view) {
     floui_jni_handle_events(view);
 }
+
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_com_example_myapplication_MainActivity_findNativeViewById(JNIEnv *env, jobject thiz,
                                                                jstring id) {
-    return static_cast<jobject>(Widget::from_id<Widget>(
-            reinterpret_cast<const char *>(id)).inner());
+    return (jobject)Widget::from_id<Widget>(reinterpret_cast<const char *>(id)).inner();
 }
 ```
