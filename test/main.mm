@@ -2,7 +2,7 @@
 // Don't structure your code this way!
 
 #define FLOUI_IMPL
-#include "../floui.hpp"
+#include "../src/floui.hpp"
 
 @interface AppDelegate :
 #if TARGET_OS_OSX
@@ -71,16 +71,8 @@ NSWindow *win;
 @end
 #endif
 
-#if TARGET_OS_IPHONE
-#define FONT UIFont
-#define COLOR UIColor
-#else
-#define FONT NSFont
-#define COLOR NSColor
-#endif
-
 @implementation ViewController
-Button dec_btn(@"Decrement");
+Button dec_btn("Decrement");
 int val {0};
 #if TARGET_OS_OSX
 - (void)loadView {
@@ -94,29 +86,28 @@ int val {0};
     self.view.frame = NSMakeRect(0, 0, 600, 400);
 #endif
         MainView(self, {
-            Text(@"Counter")
+            Text("Counter")
                 .size(600, 100)
                 .center()
-                .foreground(COLOR.whiteColor)
-                .font([FONT boldSystemFontOfSize:30])
-                .background(COLOR.purpleColor),
+                .foreground(0xffffffff)
+                .fontsize(30)
+                .background(0xff00ffff),
             Spacer().size(0, 50),
             VStack({
-                Button(@"Increment")
+                Button("Increment")
                     .action(self, @selector(increment))
                     .size(0, 40)
                     .filled()
-                    .background(COLOR.blueColor)
-                    .foreground(COLOR.whiteColor),
-                Text(@"0").id("mytext").size(0, 50),
-                dec_btn.foreground(COLOR.whiteColor)
+                    .background(0x0000ffff)
+                    .foreground(0xffffffff),
+                Text("0").id("mytext").size(0, 50),
+                dec_btn.foreground(0xffffffff)
                         .size(0, 40)
                         .filled()
-                        .background(COLOR.blueColor)
+                        .background(0x0000ffff)
                         .action([=] {
                             val--;
-                            Widget::from_id<Text>("mytext").text(
-                                [NSString stringWithFormat:@"%d", val]);
+                            Widget::from_id<Text>("mytext").text(std::to_string(val));
                         }),
             }),
             Spacer()
@@ -124,7 +115,7 @@ int val {0};
 }
 - (void)increment {
     val++;
-    Widget::from_id<Text>("mytext").text([NSString stringWithFormat:@"%d", val]);
+    Widget::from_id<Text>("mytext").text(std::to_string(val));
 }
 @end
 
