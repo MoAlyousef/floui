@@ -63,11 +63,11 @@ void floui_jni_handle_events(void *view);
 #endif // __APPLE__
 
 class Widget {
-protected:
+  protected:
     static inline std::unordered_map<const char *, void *> widget_map{};
     void *view = nullptr;
 
-public:
+  public:
     explicit Widget(void *v);
     void *inner() const;
     template <typename T, typename = std::enable_if_t<std::is_base_of_v<Widget, T>>>
@@ -80,7 +80,7 @@ public:
 class Button : public Widget {
     static void *init();
 
-public:
+  public:
     explicit Button(void *b);
     explicit Button(const std::string &label);
     Button &text(const std::string &label);
@@ -94,7 +94,7 @@ public:
 };
 
 class Text : public Widget {
-public:
+  public:
     explicit Text(void *b);
     explicit Text(const std::string &s);
     Text &center();
@@ -105,7 +105,7 @@ public:
 };
 
 class TextField : public Widget {
-public:
+  public:
     explicit TextField(void *b);
     TextField();
     TextField &center();
@@ -117,21 +117,21 @@ public:
 };
 
 class Spacer : public Widget {
-public:
+  public:
     explicit Spacer(void *b);
     Spacer();
     DECLARE_STYLES(Spacer)
 };
 
 class MainView : public Widget {
-public:
+  public:
     explicit MainView(void *m);
     MainView(void *vc, std::initializer_list<Widget> l);
     DECLARE_STYLES(MainView)
 };
 
 class VStack : public Widget {
-public:
+  public:
     explicit VStack(void *v);
     explicit VStack(std::initializer_list<Widget> l);
     VStack &spacing(int val);
@@ -139,7 +139,7 @@ public:
 };
 
 class HStack : public Widget {
-public:
+  public:
     explicit HStack(void *v);
     explicit HStack(std::initializer_list<Widget> l);
     HStack &spacing(int val);
@@ -166,7 +166,7 @@ struct FlouiViewControllerImpl {
 };
 
 FlouiViewController::FlouiViewController(void *env, void *m, void *layout)
-        : impl(new FlouiViewControllerImpl((JNIEnv *)env, (jobject)m, (jobject)layout)) {}
+    : impl(new FlouiViewControllerImpl((JNIEnv *)env, (jobject)m, (jobject)layout)) {}
 
 using c = FlouiViewControllerImpl;
 
@@ -183,7 +183,8 @@ void floui_jni_handle_events(void *view) {
 void floui_log(const std::string &s) {
     auto cl = c::env->FindClass("android/util/Log");
     auto e = c::env->GetStaticMethodID(cl, "d", "(Ljava/lang/String;Ljava/lang/String;)I");
-    c::env->CallStaticIntMethod(cl, e, c::env->NewStringUTF("FlouiApp"), c::env->NewStringUTF(s.c_str()));
+    c::env->CallStaticIntMethod(cl, e, c::env->NewStringUTF("FlouiApp"),
+                                c::env->NewStringUTF(s.c_str()));
 }
 
 constexpr uint32_t argb2rgba(uint32_t argb) {
@@ -450,9 +451,7 @@ DEFINE_STYLES(HStack)
 
 #else
 
-void floui_log(const std::string &s) {
-  NSLog(@"%@", [NSString stringWithUTF8String:s.c_str()]);
-}
+void floui_log(const std::string &s) { NSLog(@"%@", [NSString stringWithUTF8String:s.c_str()]); }
 
 @interface Callback : NSObject {
     std::function<void(Widget &)> *fn_;
@@ -471,7 +470,7 @@ void floui_log(const std::string &s) {
     return self;
 }
 - (void)invoke {
-    auto w = Widget(target);
+    auto w = Widget(target_);
     (*fn_)(w);
 }
 - (void)dealloc {
@@ -487,14 +486,15 @@ void floui_log(const std::string &s) {
 constexpr UIColor *col2uicol(uint32_t col) {
     auto r = ((col >> 24) & 0xFF) / 255.0;
     auto g = ((col >> 16) & 0xFF) / 255.0;
-    auto b = ((hexValue >> 8) & 0xFF) / 255.0;
-    auto a = ((hexValue) & 0xFF) / 255.0;
+    auto b = ((col >> 8) & 0xFF) / 255.0;
+    auto a = ((col)&0xFF) / 255.0;
     return [UIColor colorWithRed:r green:g blue:b alpha:a];
 }
 
 #define DEFINE_STYLES(widget)                                                                      \
     widget &widget::background(uint32_t col) {                                                     \
-        view.backgroundColor = col2uicol(col);                                                     \
+        auto v = (UIView *)view;                                                                   \
+        v.backgroundColor = col2uicol(col);                                                        \
         return *this;                                                                              \
     }                                                                                              \
     widget &widget::id(const char *val) {                                                          \
@@ -502,10 +502,11 @@ constexpr UIColor *col2uicol(uint32_t col) {
         return *this;                                                                              \
     }                                                                                              \
     widget &widget::size(int w, int h) {                                                           \
-        auto frame = view.frame;                                                                   \
+        auto v = (UIView *)view;                                                                   \
+        auto frame = v.frame;                                                                      \
         frame.size.width = w;                                                                      \
         frame.size.height = h;                                                                     \
-        view.frame = frame;                                                                        \
+        v.frame = frame;                                                                           \
         return *this;                                                                              \
     }
 
@@ -529,9 +530,7 @@ Button &Button::filled() {
 Button &Button::action(std::function<void(Widget &)> &&f) {
     auto v = (UIButton *)view;
     cb_ = [[Callback alloc] initWithTarget:view Cb:f];
-    [v addTarget:cb_
-                         action:@selector(invoke)
-               forControlEvents:UIControlEventTouchUpInside];
+    [v addTarget:cb_ action:@selector(invoke) forControlEvents:UIControlEventTouchUpInside];
     return *this;
 }
 
@@ -628,9 +627,8 @@ DEFINE_STYLES(Spacer)
 
 MainView::MainView(void *v) : Widget(v) {}
 
-MainView::MainView(void *fvc, std::initializer_list<Widget> l)
-    : Widget([UIStackView new]) {
-    auto v = (UIStackView*)view;
+MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget([UIStackView new]) {
+    auto v = (UIStackView *)view;
     auto vc = (UIViewController *)fvc;
     [vc.view addSubview:view];
     view.frame = vc.view.frame;
@@ -651,7 +649,7 @@ MainView::MainView(void *fvc, std::initializer_list<Widget> l)
 }
 
 MainView &MainView::spacing(int val) {
-    auto v = (UIStackView*)view;
+    auto v = (UIStackView *)view;
     [v setSpacing:val];
     return *this;
 }
@@ -661,7 +659,7 @@ DEFINE_STYLES(MainView)
 VStack::VStack(void *v) : Widget(v) {}
 
 VStack::VStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
-    auto v = (UIStackView*)view;
+    auto v = (UIStackView *)view;
     [v setAxis:UILayoutConstraintAxisVertical];
     [v setDistribution:UIStackViewDistributionFillEqually];
     [v setAlignment:UIStackViewAlignmentCenter];
@@ -677,7 +675,7 @@ VStack::VStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
 }
 
 VStack &VStack::spacing(int val) {
-    auto v = (UIStackView*)view;
+    auto v = (UIStackView *)view;
     [v setSpacing:val];
     return *this;
 }
@@ -687,7 +685,7 @@ DEFINE_STYLES(VStack)
 HStack::HStack(void *v) : Widget(v) {}
 
 HStack::HStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
-    auto v = (UIStackView*)view;
+    auto v = (UIStackView *)view;
     [v setAxis:UILayoutConstraintAxisHorizontal];
     [v setDistribution:UIStackViewDistributionFillEqually];
     [v setAlignment:UIStackViewAlignmentCenter];
@@ -703,7 +701,7 @@ HStack::HStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
 }
 
 HStack &HStack::spacing(int val) {
-    auto v = (UIStackView*)view;
+    auto v = (UIStackView *)view;
     [v setSpacing:val];
     return *this;
 }
@@ -724,7 +722,8 @@ constexpr NSColor *col2nscol(uint32_t col) {
 
 #define DEFINE_STYLES(widget)                                                                      \
     widget &widget::background(uint32_t col) {                                                     \
-        view.layer.backgroundColor = col2nscol(col).CGColor;                                       \
+        auto v = (NSView *)view;                                                                   \
+        v.layer.backgroundColor = col2nscol(col).CGColor;                                          \
         return *this;                                                                              \
     }                                                                                              \
     widget &widget::id(const char *val) {                                                          \
@@ -732,10 +731,11 @@ constexpr NSColor *col2nscol(uint32_t col) {
         return *this;                                                                              \
     }                                                                                              \
     widget &widget::size(int w, int h) {                                                           \
-        auto frame = view.frame;                                                                   \
+        auto v = (NSView *)view;                                                                   \
+        auto frame = v.frame;                                                                      \
         frame.size.width = w;                                                                      \
         frame.size.height = h;                                                                     \
-        view.frame = frame;                                                                        \
+        v.frame = frame;                                                                           \
         return *this;                                                                              \
     }
 
@@ -865,8 +865,7 @@ DEFINE_STYLES(Spacer)
 
 MainView::MainView(void *v) : Widget(v) {}
 
-MainView::MainView(void *fvc, std::initializer_list<Widget> l)
-    : Widget([NSStackView new]) {
+MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget([NSStackView new]) {
     auto vc = (NSViewController *)fvc;
     auto v = (NSStackView *)view;
     [vc.view addSubview:view];
@@ -935,4 +934,3 @@ DEFINE_STYLES(HStack)
 #endif // FLOUI_IMPL
 
 #endif // __FLOUI_H__
-
