@@ -625,7 +625,7 @@ TextField &TextField::text(const std::string &s) {
 }
 
 std::string TextField::text() const {
-    return std::string([[(__bridge UITextField *)view stringValue] UTF8String]);
+    return std::string([((__bridge UITextField *)view).text UTF8String]);
 }
 
 TextField &TextField::fontsize(int size) {
