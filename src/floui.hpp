@@ -450,6 +450,8 @@ DEFINE_STYLES(HStack)
 
 #else
 
+#import <Foundation/Foundation.h>
+
 void floui_log(const std::string &s) { NSLog(@"%@", [NSString stringWithUTF8String:s.c_str()]); }
 
 @interface Callback : NSObject {
