@@ -23,5 +23,5 @@ jobs:
     - name: Download jdk
       run: sudo apt-get install openjdk-8-jdk
     - name: Build jni
-      run: g++ -I${JAVA_HOME}/include -c test/jni.cpp 
+      run: g++ -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -c test/jni.cpp 
       
