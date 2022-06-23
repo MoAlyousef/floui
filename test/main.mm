@@ -85,7 +85,7 @@ int val {0};
 #if TARGET_OS_OSX
     self.view.frame = NSMakeRect(0, 0, 600, 400);
 #endif
-        MainView(self, {
+        MainView((void *)CFBridgingRetain(self), {
             Text("Counter")
                 .size(600, 100)
                 .center()
@@ -105,7 +105,7 @@ int val {0};
                         .size(0, 40)
                         .filled()
                         .background(0x0000ffff)
-                        .action([=] {
+                        .action([=](Widget&) {
                             val--;
                             Widget::from_id<Text>("mytext").text(std::to_string(val));
                         }),

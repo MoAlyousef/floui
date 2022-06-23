@@ -530,7 +530,7 @@ Button &Button::filled() {
 
 Button &Button::action(std::function<void(Widget &)> &&f) {
     auto v = (__bridge UIButton *)view;
-    cb_ = [[Callback alloc] initWithTarget:view Cb:f];
+    cb_ = (void *)CFBridgingRetain([[Callback alloc] initWithTarget:view Cb:f]);
     [v addTarget:(__bridge Callback *)cb_ action:@selector(invoke) forControlEvents:UIControlEventTouchUpInside];
     return *this;
 }
@@ -872,7 +872,7 @@ MainView::MainView(void *v) : Widget(v) {}
 MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetain([NSStackView new])) {
     auto vc = (__bridge NSViewController *)fvc;
     auto v = (__bridge NSStackView *)view;
-    [vc.view addSubview:view];
+    [vc.view addSubview:v];
     v.frame = vc.view.frame;
     [v setOrientation:NSUserInterfaceLayoutOrientationVertical];
     [v setDistribution:NSStackViewDistributionFillEqually];
