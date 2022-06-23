@@ -195,7 +195,7 @@ constexpr uint32_t argb2rgba(uint32_t argb) {
 
 #define DEFINE_STYLES(widget)                                                                      \
     widget &widget::background(uint32_t col) {                                                     \
-        auto v = (jobject)view;                                                           \
+        auto v = (jobject)view;                                                                    \
         auto setBackgroundColor =                                                                  \
             c::env->GetMethodID(c::env->GetObjectClass(v), "setBackgroundColor", "(I)V");          \
         c::env->CallVoidMethod(v, setBackgroundColor, argb2rgba(col));                             \
@@ -206,7 +206,7 @@ constexpr uint32_t argb2rgba(uint32_t argb) {
         return *this;                                                                              \
     }                                                                                              \
     widget &widget::size(int w, int h) {                                                           \
-        auto v = (jobject)view;                                                           \
+        auto v = (jobject)view;                                                                    \
         auto setWidth = c::env->GetMethodID(c::env->GetObjectClass(v), "setMinimumWidth", "(I)V"); \
         auto setHeight =                                                                           \
             c::env->GetMethodID(c::env->GetObjectClass(v), "setMinimumHeight", "(I)V");            \
