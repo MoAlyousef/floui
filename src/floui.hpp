@@ -715,8 +715,8 @@ DEFINE_STYLES(HStack)
 constexpr NSColor *col2nscol(uint32_t col) {
     auto r = ((col >> 24) & 0xFF) / 255.0;
     auto g = ((col >> 16) & 0xFF) / 255.0;
-    auto b = ((hexValue >> 8) & 0xFF) / 255.0;
-    auto a = ((hexValue)&0xFF) / 255.0;
+    auto b = ((col >> 8) & 0xFF) / 255.0;
+    auto a = ((col)&0xFF) / 255.0;
     return [NSColor colorWithRed:r green:g blue:b alpha:a];
 }
 
