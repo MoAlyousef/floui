@@ -768,7 +768,7 @@ Button &Button::filled() { return *this; }
 
 Button &Button::action(std::function<void(Widget &)> &&f) {
     auto v = (__bridge NSButton *)view;
-    cb_ = [[Callback alloc] initWithTarget:view Cb:f];
+    cb_ = (void *)CFBridgingRetain([[Callback alloc] initWithTarget:view Cb:f]);
     [v setTarget:(__bridge Callback *)cb_];
     [v setAction:@selector(invoke)];
     return *this;
