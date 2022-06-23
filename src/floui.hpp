@@ -126,6 +126,7 @@ class MainView : public Widget {
   public:
     explicit MainView(void *m);
     MainView(void *vc, std::initializer_list<Widget> l);
+    MainView &spacing(int val);
     DECLARE_STYLES(MainView)
 };
 
@@ -398,6 +399,10 @@ MainView::MainView(void *vc, std::initializer_list<Widget> l) : Widget(MainView_
     }
 }
 
+MainView &MainView::spacing(int space) {
+  return *this;
+}
+
 DEFINE_STYLES(MainView)
 
 void *VStack_init() {
@@ -423,6 +428,11 @@ VStack::VStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
     }
 }
 
+VStack &VStack::spacing(int space) {
+  return *this;
+}
+
+
 DEFINE_STYLES(VStack)
 
 void *HStack_init() {
@@ -444,6 +454,10 @@ HStack::HStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
     for (auto e : l) {
         c::env->CallVoidMethod((jobject)view, addview, (jobject)e.inner());
     }
+}
+
+HStack &HStack::spacing(int space) {
+  return *this;
 }
 
 DEFINE_STYLES(HStack)
@@ -521,12 +535,12 @@ Button::Button(void *b) : Widget(b) {}
 
 Button::Button(const std::string &label) : Widget((void *)CFBridgingRetain([UIButton buttonWithType:UIButtonTypeCustom])) {
     auto v = (__bridge UIButton *)view;
-    [v setTitle:label forState:UIControlStateNormal];
+    [v setTitle:[NSString stringWithUTF8String:label.c_str()] forState:UIControlStateNormal];
     [v setTitleColor:UIColor.blueColor forState:UIControlStateNormal];
 }
 
 Button &Button::filled() {
-    ((UIButton *)view).configuration = [UIButtonConfiguration filledButtonConfiguration];
+    ((__bridge UIButton *)view).configuration = [UIButtonConfiguration filledButtonConfiguration];
     return *this;
 }
 
@@ -611,7 +625,7 @@ TextField &TextField::text(const std::string &s) {
 }
 
 std::string TextField::text() const {
-    return std::string([[(NSTextField *)view stringValue] UTF8String]);
+    return std::string([[(__bridge UITextField *)view stringValue] UTF8String]);
 }
 
 TextField &TextField::fontsize(int size) {
@@ -640,7 +654,7 @@ MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget((void *)
     [v setAlignment:UIStackViewAlignmentCenter];
     [v setSpacing:10];
     for (auto e : l) {
-        auto w = (__bridget UIView *)e.inner();
+        auto w = (__bridge UIView *)e.inner();
         [v addArrangedSubview:w];
         if (w.frame.size.width != 0)
             [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
@@ -694,7 +708,7 @@ HStack::HStack(std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetai
     [v setAlignment:UIStackViewAlignmentCenter];
     [v setSpacing:10];
     for (auto e : l) {
-        auto w = (UIView *)e;
+        auto w = (__bridge UIView *)e.inner();
         [v addArrangedSubview:w];
         if (w.frame.size.width != 0)
             [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
