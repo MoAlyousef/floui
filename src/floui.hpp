@@ -78,8 +78,7 @@ class Widget {
 };
 
 class Button : public Widget {
-    static void *init();
-
+  void *cb_;
   public:
     explicit Button(void *b);
     explicit Button(const std::string &label);
@@ -518,7 +517,7 @@ DEFINE_STYLES(Widget)
 
 Button::Button(void *b) : Widget(b) {}
 
-Button::Button(const std::string &label) : Widget([UIButton buttonWithType:UIButtonTypeCustom]) {
+Button::Button(const std::string &label) : Widget((void *)CFBridgingRetain([UIButton buttonWithType:UIButtonTypeCustom])) {
     auto v = (__bridge UIButton *)view;
     [v setTitle:label forState:UIControlStateNormal];
     [v setTitleColor:UIColor.blueColor forState:UIControlStateNormal];
@@ -532,7 +531,7 @@ Button &Button::filled() {
 Button &Button::action(std::function<void(Widget &)> &&f) {
     auto v = (__bridge UIButton *)view;
     cb_ = [[Callback alloc] initWithTarget:view Cb:f];
-    [v addTarget:cb_ action:@selector(invoke) forControlEvents:UIControlEventTouchUpInside];
+    [v addTarget:(__bridge Callback *)cb_ action:@selector(invoke) forControlEvents:UIControlEventTouchUpInside];
     return *this;
 }
 
@@ -552,7 +551,7 @@ DEFINE_STYLES(Button)
 
 Text::Text(void *b) : Widget(b) {}
 
-Text::Text(const std::string &s) : Widget([UILabel new]) {
+Text::Text(const std::string &s) : Widget((void *)CFBridgingRetain([UILabel new])) {
     auto v = (__bridge UILabel *)view;
     [v setText:[NSString stringWithUTF8String:s.c_str()]];
     [v setTextColor:UIColor.blackColor];
@@ -586,7 +585,7 @@ DEFINE_STYLES(Text)
 
 TextField::TextField(void *b) : Widget(b) {}
 
-TextField::TextField() : Widget([UITextField new]) {
+TextField::TextField() : Widget((void *)CFBridgingRetain([UITextField new])) {
     auto v = (__bridge UITextField *)view;
     [v setTextColor:UIColor.blackColor];
 }
@@ -623,15 +622,15 @@ DEFINE_STYLES(TextField)
 
 Spacer::Spacer(void *b) : Widget(b) {}
 
-Spacer::Spacer() : Widget([UIView new]) {}
+Spacer::Spacer() : Widget((void *)CFBridgingRetain([UIView new])) {}
 
 DEFINE_STYLES(Spacer)
 
 MainView::MainView(void *v) : Widget(v) {}
 
-MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget([UIStackView new]) {
+MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetain([UIStackView new])) {
     auto v = (__bridge UIStackView *)view;
-    auto vc = (UIViewController *)fvc;
+    auto vc = (__bridge UIViewController *)fvc;
     [vc.view addSubview:v];
     v.frame = vc.view.frame;
     [v setAxis:UILayoutConstraintAxisVertical];
@@ -645,8 +644,8 @@ MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget([UIStack
             [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
         if (w.frame.size.height != 0)
             [w.heightAnchor constraintEqualToConstant:w.frame.size.height].active = YES;
-        [w.leadingAnchor constraintEqualToAnchor:view.leadingAnchor constant:0].active = YES;
-        [w.trailingAnchor constraintEqualToAnchor:view.trailingAnchor constant:0].active = YES;
+        [w.leadingAnchor constraintEqualToAnchor:v.leadingAnchor constant:0].active = YES;
+        [w.trailingAnchor constraintEqualToAnchor:v.trailingAnchor constant:0].active = YES;
     }
 }
 
@@ -660,7 +659,7 @@ DEFINE_STYLES(MainView)
 
 VStack::VStack(void *v) : Widget(v) {}
 
-VStack::VStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
+VStack::VStack(std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetain([UIStackView new])) {
     auto v = (__bridge UIStackView *)view;
     [v setAxis:UILayoutConstraintAxisVertical];
     [v setDistribution:UIStackViewDistributionFillEqually];
@@ -686,7 +685,7 @@ DEFINE_STYLES(VStack)
 
 HStack::HStack(void *v) : Widget(v) {}
 
-HStack::HStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
+HStack::HStack(std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetain([UIStackView new])) {
     auto v = (__bridge UIStackView *)view;
     [v setAxis:UILayoutConstraintAxisHorizontal];
     [v setDistribution:UIStackViewDistributionFillEqually];
@@ -761,7 +760,7 @@ DEFINE_STYLES(Widget)
 
 Button::Button(void *b) : Widget(b) {}
 
-Button::Button(const std::string &label) : Widget([NSButton new]) {
+Button::Button(const std::string &label) : Widget((void *)CFBridgingRetain([NSButton new])) {
     [(__bridge NSButton *)view setTitle:[NSString stringWithUTF8String:label.c_str()]];
 }
 
@@ -770,7 +769,7 @@ Button &Button::filled() { return *this; }
 Button &Button::action(std::function<void(Widget &)> &&f) {
     auto v = (__bridge NSButton *)view;
     cb_ = [[Callback alloc] initWithTarget:view Cb:f];
-    [v setTarget:cb_];
+    [v setTarget:(__bridge Callback *)cb_];
     [v setAction:@selector(invoke)];
     return *this;
 }
@@ -792,7 +791,7 @@ DEFINE_STYLES(Button)
 
 Text::Text(void *b) : Widget(b) {}
 
-Text::Text(const std::string &s) : Widget([NSTextField new]) {
+Text::Text(const std::string &s) : Widget((void *)CFBridgingRetain([NSTextField new])) {
     auto v = (__bridge NSTextField *)view;
     [v setBezeled:NO];
     [v setDrawsBackground:NO];
@@ -829,11 +828,11 @@ DEFINE_STYLES(Text)
 
 TextField::TextField(void *b) : Widget(b) {}
 
-TextField::TextField() : Widget([NSTextField new]) {}
+TextField::TextField() : Widget((void *)CFBridgingRetain([NSTextField new])) {}
 
 TextField &TextField::foreground(uint32_t c) {
     auto v = (__bridge NSTextField *)view;
-    [v setTextColor:c];
+    [v setTextColor:col2nscol(c)];
     return *this;
 }
 
@@ -864,14 +863,14 @@ DEFINE_STYLES(TextField)
 
 Spacer::Spacer(void *b) : Widget(b) {}
 
-Spacer::Spacer() : Widget([NSView new]) {}
+Spacer::Spacer() : Widget((void *)CFBridgingRetain([NSView new])) {}
 
 DEFINE_STYLES(Spacer)
 
 MainView::MainView(void *v) : Widget(v) {}
 
-MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget([NSStackView new]) {
-    auto vc = (NSViewController *)fvc;
+MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetain([NSStackView new])) {
+    auto vc = (__bridge NSViewController *)fvc;
     auto v = (__bridge NSStackView *)view;
     [vc.view addSubview:view];
     v.frame = vc.view.frame;
@@ -885,8 +884,8 @@ MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget([NSStack
             [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
         if (w.frame.size.height != 0)
             [w.heightAnchor constraintEqualToConstant:w.frame.size.height].active = YES;
-        [w.leadingAnchor constraintEqualToAnchor:view.leadingAnchor constant:0].active = YES;
-        [w.trailingAnchor constraintEqualToAnchor:view.trailingAnchor constant:0].active = YES;
+        [w.leadingAnchor constraintEqualToAnchor:v.leadingAnchor constant:0].active = YES;
+        [w.trailingAnchor constraintEqualToAnchor:v.trailingAnchor constant:0].active = YES;
     }
 }
 
@@ -894,7 +893,7 @@ DEFINE_STYLES(MainView)
 
 VStack::VStack(void *v) : Widget(v) {}
 
-VStack::VStack(std::initializer_list<Widget> l) : Widget([NSStackView new]) {
+VStack::VStack(std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetain([NSStackView new])) {
     auto v = (__bridge NSStackView *)view;
     [v setOrientation:NSUserInterfaceLayoutOrientationVertical];
     [v setDistribution:NSStackViewDistributionFillEqually];
@@ -914,7 +913,7 @@ DEFINE_STYLES(VStack)
 
 HStack::HStack(void *v) : Widget(v) {}
 
-HStack::HStack(std::initializer_list<Widget> l) : Widget([NSStackView new]) {
+HStack::HStack(std::initializer_list<Widget> l) : Widget((void *)CFBridgingRetain([NSStackView new])) {
     auto v = (__bridge NSStackView *)view;
     [v setOrientation:NSUserInterfaceLayoutOrientationHorizontal];
     [v setDistribution:NSStackViewDistributionFillEqually];
