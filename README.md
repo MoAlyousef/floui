@@ -64,8 +64,6 @@ Add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
 
 ![image](https://user-images.githubusercontent.com/37966791/173707028-a6e076c2-4170-459e-88a7-bd555ecfd1fa.png)
 
-![image](https://user-images.githubusercontent.com/37966791/173926274-4ea69936-708d-4b24-92e3-48e40bde8ce5.png)
-
 ### Android
 Assuming your application is called myapplication:
 
@@ -156,6 +154,7 @@ Java_com_example_myapplication_MainActivity_findNativeViewById(JNIEnv *env, jobj
     return (jobject)Widget::from_id<Widget>(reinterpret_cast<const char *>(id)).inner();
 }
 ```
+Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
 
 ## Todo
 - Wrap more UIKit and Android controls.
