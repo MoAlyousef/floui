@@ -2,7 +2,7 @@
 // Don't structure your code this way!
 
 #define FLOUI_IMPL
-#include "../src/floui.hh"
+#include "../floui.hh"
 
 @interface AppDelegate :
 #if TARGET_OS_OSX
