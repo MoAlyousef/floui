@@ -12,6 +12,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import android.app.ActionBar;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import com.example.myapplication.databinding.ActivityMainBinding;
 
@@ -28,8 +29,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         ConstraintLayout root = binding.getRoot();
         setContentView(root);
-        View view = mainView(root);
-        view.getLayoutParams().width = ActionBar.LayoutParams.MATCH_PARENT;
+        mainView(root);
+        LinearLayout view = (LinearLayout) mainView(root);
+        view.getLayoutParams().width = LinearLayout.LayoutParams.MATCH_PARENT;
     }
     public native View mainView(View view);
     public native void handleEvent(View view);
