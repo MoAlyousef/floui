@@ -172,7 +172,7 @@ FlouiViewController::FlouiViewController(void *env, void *m, void *layout)
 using c = FlouiViewControllerImpl;
 
 void floui_jni_handle_events(void *view) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     for (const auto obj : c::callbackmap) {
         if (c::env->IsSameObject(obj.first, v)) { // can't depend on std::hash to get the cb
             auto w = Widget(v);
@@ -195,7 +195,7 @@ constexpr uint32_t argb2rgba(uint32_t argb) {
 
 #define DEFINE_STYLES(widget)                                                                      \
     widget &widget::background(uint32_t col) {                                                     \
-        auto v = (__bridge jobject)view;                                                           \
+        auto v = (jobject)view;                                                           \
         auto setBackgroundColor =                                                                  \
             c::env->GetMethodID(c::env->GetObjectClass(v), "setBackgroundColor", "(I)V");          \
         c::env->CallVoidMethod(v, setBackgroundColor, argb2rgba(col));                             \
@@ -206,7 +206,7 @@ constexpr uint32_t argb2rgba(uint32_t argb) {
         return *this;                                                                              \
     }                                                                                              \
     widget &widget::size(int w, int h) {                                                           \
-        auto v = (__bridge jobject)view;                                                           \
+        auto v = (jobject)view;                                                           \
         auto setWidth = c::env->GetMethodID(c::env->GetObjectClass(v), "setMinimumWidth", "(I)V"); \
         auto setHeight =                                                                           \
             c::env->GetMethodID(c::env->GetObjectClass(v), "setMinimumHeight", "(I)V");            \
@@ -233,14 +233,14 @@ void *Button_init() {
 Button::Button(void *b) : Widget(b) {}
 
 Button::Button(const std::string &label) : Widget(Button_init()) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto setText =
         c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
 Button &Button::text(const std::string &label) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto setText =
         c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
@@ -248,7 +248,7 @@ Button &Button::text(const std::string &label) {
 }
 
 Button &Button::foreground(uint32_t c) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
     c::env->CallVoidMethod(v, setTextColor, argb2rgba(c));
     return *this;
@@ -257,7 +257,7 @@ Button &Button::foreground(uint32_t c) {
 Button &Button::filled() { return *this; }
 
 Button &Button::action(std::function<void(Widget &)> &&f) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     c::callbackmap[v] = new std::function<void(Widget &)>(f);
     auto setOnClickListener = c::env->GetMethodID(c::env->GetObjectClass(v), "setOnClickListener",
                                                   "(Landroid/view/View$OnClickListener;)V");
@@ -277,21 +277,21 @@ void *Text_init() {
 Text::Text(void *b) : Widget(b) {}
 
 Text::Text(const std::string &label) : Widget(Text_init()) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto setText =
         c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
 Text &Text::fontsize(int size) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto setTextSize = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextSize", "(F)V");
     c::env->CallVoidMethod(v, setTextSize, (float)size);
     return *this;
 }
 
 Text &Text::text(const std::string &label) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto setText =
         c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
@@ -299,14 +299,14 @@ Text &Text::text(const std::string &label) {
 }
 
 Text &Text::center() {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto setGravity = c::env->GetMethodID(c::env->GetObjectClass(v), "setGravity", "(I)V");
     c::env->CallVoidMethod(v, setGravity, 17 /*center*/);
     return *this;
 }
 
 Text &Text::foreground(uint32_t c) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
     c::env->CallVoidMethod(v, setTextColor, argb2rgba(c));
     return *this;
@@ -326,14 +326,14 @@ TextField::TextField(void *b) : Widget(b) {}
 TextField::TextField() : Widget(TextField_init()) {}
 
 TextField &TextField::fontsize(int size) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto setTextSize = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextSize", "(F)V");
     c::env->CallVoidMethod(v, setTextSize, (float)size);
     return *this;
 }
 
 TextField &TextField::text(const std::string &label) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto setText =
         c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
@@ -341,7 +341,7 @@ TextField &TextField::text(const std::string &label) {
 }
 
 std::string TextField::text() const {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto getText =
         c::env->GetMethodID(c::env->GetObjectClass(v), "getText", "()Ljava/lang/CharSequence;");
     auto ret = c::env->CallObjectMethod(v, getText);
@@ -349,14 +349,14 @@ std::string TextField::text() const {
 }
 
 TextField &TextField::center() {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto setGravity = c::env->GetMethodID(c::env->GetObjectClass(v), "setGravity", "(I)V");
     c::env->CallVoidMethod(v, setGravity, 17 /*center*/);
     return *this;
 }
 
 TextField &TextField::foreground(uint32_t c) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
     c::env->CallVoidMethod(v, setTextColor, argb2rgba(c));
     return *this;
@@ -391,7 +391,7 @@ void *MainView_init() {
 MainView::MainView(void *m) : Widget(m) {}
 
 MainView::MainView(void *vc, std::initializer_list<Widget> l) : Widget(MainView_init()) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
     c::env->CallVoidMethod(c::layout, addview, v);
@@ -418,7 +418,7 @@ void *VStack_init() {
 VStack::VStack(void *m) : Widget(m) {}
 
 VStack::VStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
     c::env->CallVoidMethod(c::layout, addview, v);
@@ -443,7 +443,7 @@ void *HStack_init() {
 HStack::HStack(void *m) : Widget(m) {}
 
 HStack::HStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
-    auto v = (__bridge jobject)view;
+    auto v = (jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
     c::env->CallVoidMethod(c::layout, addview, v);
