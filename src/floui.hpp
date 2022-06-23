@@ -451,11 +451,11 @@ DEFINE_STYLES(HStack)
 #else
 
 void floui_log(const std::string &s) {
-  NSLog([NSString stringWithUTF8String:s.c_str()]);
+  NSLog(@"%@", [NSString stringWithUTF8String:s.c_str()]);
 }
 
 @interface Callback : NSObject {
-    std::function<void()> *fn_;
+    std::function<void(Widget &)> *fn_;
     void *target_;
 }
 - (id)initWithTarget:(void *)target Cb:(const std::function<void(Widget &)> &)f;
