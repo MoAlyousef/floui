@@ -171,7 +171,7 @@ FlouiViewController::FlouiViewController(void *env, void *m, void *layout)
 using c = FlouiViewControllerImpl;
 
 void floui_jni_handle_events(void *view) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     for (const auto obj : c::callbackmap) {
         if (c::env->IsSameObject(obj.first, v)) { // can't depend on std::hash to get the cb
             auto w = Widget(v);
@@ -194,7 +194,7 @@ constexpr uint32_t argb2rgba(uint32_t argb) {
 
 #define DEFINE_STYLES(widget)                                                                      \
     widget &widget::background(uint32_t col) {                                                     \
-        auto v = (jobject)view;                                                                    \
+        auto v = (__bridge jobject)view;                                                           \
         auto setBackgroundColor =                                                                  \
             c::env->GetMethodID(c::env->GetObjectClass(v), "setBackgroundColor", "(I)V");          \
         c::env->CallVoidMethod(v, setBackgroundColor, argb2rgba(col));                             \
@@ -205,7 +205,7 @@ constexpr uint32_t argb2rgba(uint32_t argb) {
         return *this;                                                                              \
     }                                                                                              \
     widget &widget::size(int w, int h) {                                                           \
-        auto v = (jobject)view;                                                                    \
+        auto v = (__bridge jobject)view;                                                           \
         auto setWidth = c::env->GetMethodID(c::env->GetObjectClass(v), "setMinimumWidth", "(I)V"); \
         auto setHeight =                                                                           \
             c::env->GetMethodID(c::env->GetObjectClass(v), "setMinimumHeight", "(I)V");            \
@@ -232,14 +232,14 @@ void *Button_init() {
 Button::Button(void *b) : Widget(b) {}
 
 Button::Button(const std::string &label) : Widget(Button_init()) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto setText =
         c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
 Button &Button::text(const std::string &label) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto setText =
         c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
@@ -247,7 +247,7 @@ Button &Button::text(const std::string &label) {
 }
 
 Button &Button::foreground(uint32_t c) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
     c::env->CallVoidMethod(v, setTextColor, argb2rgba(c));
     return *this;
@@ -256,7 +256,7 @@ Button &Button::foreground(uint32_t c) {
 Button &Button::filled() { return *this; }
 
 Button &Button::action(std::function<void(Widget &)> &&f) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     c::callbackmap[v] = new std::function<void(Widget &)>(f);
     auto setOnClickListener = c::env->GetMethodID(c::env->GetObjectClass(v), "setOnClickListener",
                                                   "(Landroid/view/View$OnClickListener;)V");
@@ -276,21 +276,21 @@ void *Text_init() {
 Text::Text(void *b) : Widget(b) {}
 
 Text::Text(const std::string &label) : Widget(Text_init()) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto setText =
         c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
 Text &Text::fontsize(int size) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto setTextSize = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextSize", "(F)V");
     c::env->CallVoidMethod(v, setTextSize, (float)size);
     return *this;
 }
 
 Text &Text::text(const std::string &label) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto setText =
         c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
@@ -298,14 +298,14 @@ Text &Text::text(const std::string &label) {
 }
 
 Text &Text::center() {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto setGravity = c::env->GetMethodID(c::env->GetObjectClass(v), "setGravity", "(I)V");
     c::env->CallVoidMethod(v, setGravity, 17 /*center*/);
     return *this;
 }
 
 Text &Text::foreground(uint32_t c) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
     c::env->CallVoidMethod(v, setTextColor, argb2rgba(c));
     return *this;
@@ -325,14 +325,14 @@ TextField::TextField(void *b) : Widget(b) {}
 TextField::TextField() : Widget(TextField_init()) {}
 
 TextField &TextField::fontsize(int size) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto setTextSize = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextSize", "(F)V");
     c::env->CallVoidMethod(v, setTextSize, (float)size);
     return *this;
 }
 
 TextField &TextField::text(const std::string &label) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto setText =
         c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
@@ -340,7 +340,7 @@ TextField &TextField::text(const std::string &label) {
 }
 
 std::string TextField::text() const {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto getText =
         c::env->GetMethodID(c::env->GetObjectClass(v), "getText", "()Ljava/lang/CharSequence;");
     auto ret = c::env->CallObjectMethod(v, getText);
@@ -348,14 +348,14 @@ std::string TextField::text() const {
 }
 
 TextField &TextField::center() {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto setGravity = c::env->GetMethodID(c::env->GetObjectClass(v), "setGravity", "(I)V");
     c::env->CallVoidMethod(v, setGravity, 17 /*center*/);
     return *this;
 }
 
 TextField &TextField::foreground(uint32_t c) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
     c::env->CallVoidMethod(v, setTextColor, argb2rgba(c));
     return *this;
@@ -390,7 +390,7 @@ void *MainView_init() {
 MainView::MainView(void *m) : Widget(m) {}
 
 MainView::MainView(void *vc, std::initializer_list<Widget> l) : Widget(MainView_init()) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
     c::env->CallVoidMethod(c::layout, addview, v);
@@ -415,7 +415,7 @@ void *VStack_init() {
 VStack::VStack(void *m) : Widget(m) {}
 
 VStack::VStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
     c::env->CallVoidMethod(c::layout, addview, v);
@@ -438,7 +438,7 @@ void *HStack_init() {
 HStack::HStack(void *m) : Widget(m) {}
 
 HStack::HStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
-    auto v = (jobject)view;
+    auto v = (__bridge jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
     c::env->CallVoidMethod(c::layout, addview, v);
@@ -479,11 +479,13 @@ void floui_log(const std::string &s) { NSLog(@"%@", [NSString stringWithUTF8Stri
 }
 @end
 
+void *Widget::inner() const { return view; }
+
 #if TARGET_OS_IPHONE
 // ios stuff
 #import <UIKit/UIKit.h>
 
-constexpr UIColor *col2uicol(uint32_t col) {
+UIColor *col2uicol(uint32_t col) {
     auto r = ((col >> 24) & 0xFF) / 255.0;
     auto g = ((col >> 16) & 0xFF) / 255.0;
     auto b = ((col >> 8) & 0xFF) / 255.0;
@@ -493,7 +495,7 @@ constexpr UIColor *col2uicol(uint32_t col) {
 
 #define DEFINE_STYLES(widget)                                                                      \
     widget &widget::background(uint32_t col) {                                                     \
-        auto v = (UIView *)view;                                                                   \
+        auto v = (__bridge UIView *)view;                                                          \
         v.backgroundColor = col2uicol(col);                                                        \
         return *this;                                                                              \
     }                                                                                              \
@@ -502,7 +504,7 @@ constexpr UIColor *col2uicol(uint32_t col) {
         return *this;                                                                              \
     }                                                                                              \
     widget &widget::size(int w, int h) {                                                           \
-        auto v = (UIView *)view;                                                                   \
+        auto v = (__bridge UIView *)view;                                                          \
         auto frame = v.frame;                                                                      \
         frame.size.width = w;                                                                      \
         frame.size.height = h;                                                                     \
@@ -517,7 +519,7 @@ DEFINE_STYLES(Widget)
 Button::Button(void *b) : Widget(b) {}
 
 Button::Button(const std::string &label) : Widget([UIButton buttonWithType:UIButtonTypeCustom]) {
-    auto v = (UIButton *)view;
+    auto v = (__bridge UIButton *)view;
     [v setTitle:label forState:UIControlStateNormal];
     [v setTitleColor:UIColor.blueColor forState:UIControlStateNormal];
 }
@@ -528,20 +530,20 @@ Button &Button::filled() {
 }
 
 Button &Button::action(std::function<void(Widget &)> &&f) {
-    auto v = (UIButton *)view;
+    auto v = (__bridge UIButton *)view;
     cb_ = [[Callback alloc] initWithTarget:view Cb:f];
     [v addTarget:cb_ action:@selector(invoke) forControlEvents:UIControlEventTouchUpInside];
     return *this;
 }
 
 Button &Button::action(::id target, SEL s) {
-    auto v = (UIButton *)view;
+    auto v = (__bridge UIButton *)view;
     [v addTarget:target action:s forControlEvents:UIControlEventTouchUpInside];
     return *this;
 }
 
 Button &Button::foreground(uint32_t c) {
-    auto v = (UIButton *)view;
+    auto v = (__bridge UIButton *)view;
     [v setTitleColor:col2uicol(c) forState:UIControlStateNormal];
     return *this;
 }
@@ -551,31 +553,31 @@ DEFINE_STYLES(Button)
 Text::Text(void *b) : Widget(b) {}
 
 Text::Text(const std::string &s) : Widget([UILabel new]) {
-    auto v = (UILabel *)view;
+    auto v = (__bridge UILabel *)view;
     [v setText:[NSString stringWithUTF8String:s.c_str()]];
     [v setTextColor:UIColor.blackColor];
 }
 
 Text &Text::foreground(uint32_t c) {
-    auto v = (UILabel *)view;
+    auto v = (__bridge UILabel *)view;
     [v setTextColor:col2uicol(c)];
     return *this;
 }
 
 Text &Text::center() {
-    auto v = (UILabel *)view;
+    auto v = (__bridge UILabel *)view;
     [v setTextAlignment:NSTextAlignmentCenter];
     return *this;
 }
 
 Text &Text::text(const std::string &s) {
-    auto v = (UILabel *)view;
+    auto v = (__bridge UILabel *)view;
     [v setText:[NSString stringWithUTF8String:s.c_str()]];
     return *this;
 }
 
 Text &Text::fontsize(int size) {
-    auto v = (UILabel *)view;
+    auto v = (__bridge UILabel *)view;
     [v setFont:[UIFont systemFontOfSize:size]];
     return *this;
 }
@@ -585,24 +587,24 @@ DEFINE_STYLES(Text)
 TextField::TextField(void *b) : Widget(b) {}
 
 TextField::TextField() : Widget([UITextField new]) {
-    auto v = (UITextField *)view;
+    auto v = (__bridge UITextField *)view;
     [v setTextColor:UIColor.blackColor];
 }
 
 TextField &TextField::foreground(uint32_t c) {
-    auto v = (UITextField *)view;
+    auto v = (__bridge UITextField *)view;
     [v setTextColor:col2uicol(c)];
     return *this;
 }
 
 TextField &TextField::center() {
-    auto v = (UITextField *)view;
+    auto v = (__bridge UITextField *)view;
     [v setTextAlignment:NSTextAlignmentCenter];
     return *this;
 }
 
 TextField &TextField::text(const std::string &s) {
-    auto v = (UITextField *)view;
+    auto v = (__bridge UITextField *)view;
     [v setText:[NSString stringWithUTF8String:s.c_str()]];
     return *this;
 }
@@ -612,7 +614,7 @@ std::string TextField::text() const {
 }
 
 TextField &TextField::fontsize(int size) {
-    auto v = (UITextField *)view;
+    auto v = (__bridge UITextField *)view;
     [v setFont:[UIFont systemFontOfSize:size]];
     return *this;
 }
@@ -628,16 +630,16 @@ DEFINE_STYLES(Spacer)
 MainView::MainView(void *v) : Widget(v) {}
 
 MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget([UIStackView new]) {
-    auto v = (UIStackView *)view;
+    auto v = (__bridge UIStackView *)view;
     auto vc = (UIViewController *)fvc;
-    [vc.view addSubview:view];
-    view.frame = vc.view.frame;
+    [vc.view addSubview:v];
+    v.frame = vc.view.frame;
     [v setAxis:UILayoutConstraintAxisVertical];
     [v setDistribution:UIStackViewDistributionFillEqually];
     [v setAlignment:UIStackViewAlignmentCenter];
     [v setSpacing:10];
     for (auto e : l) {
-        auto w = (UIView *)e;
+        auto w = (__bridget UIView *)e.inner();
         [v addArrangedSubview:w];
         if (w.frame.size.width != 0)
             [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
@@ -649,7 +651,7 @@ MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget([UIStack
 }
 
 MainView &MainView::spacing(int val) {
-    auto v = (UIStackView *)view;
+    auto v = (__bridge UIStackView *)view;
     [v setSpacing:val];
     return *this;
 }
@@ -659,13 +661,13 @@ DEFINE_STYLES(MainView)
 VStack::VStack(void *v) : Widget(v) {}
 
 VStack::VStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
-    auto v = (UIStackView *)view;
+    auto v = (__bridge UIStackView *)view;
     [v setAxis:UILayoutConstraintAxisVertical];
     [v setDistribution:UIStackViewDistributionFillEqually];
     [v setAlignment:UIStackViewAlignmentCenter];
     [v setSpacing:10];
     for (auto e : l) {
-        auto w = (UIView *)e;
+        auto w = (__bridge UIView *)e.inner();
         [v addArrangedSubview:w];
         if (w.frame.size.width != 0)
             [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
@@ -675,7 +677,7 @@ VStack::VStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
 }
 
 VStack &VStack::spacing(int val) {
-    auto v = (UIStackView *)view;
+    auto v = (__bridge UIStackView *)view;
     [v setSpacing:val];
     return *this;
 }
@@ -685,7 +687,7 @@ DEFINE_STYLES(VStack)
 HStack::HStack(void *v) : Widget(v) {}
 
 HStack::HStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
-    auto v = (UIStackView *)view;
+    auto v = (__bridge UIStackView *)view;
     [v setAxis:UILayoutConstraintAxisHorizontal];
     [v setDistribution:UIStackViewDistributionFillEqually];
     [v setAlignment:UIStackViewAlignmentCenter];
@@ -701,7 +703,7 @@ HStack::HStack(std::initializer_list<Widget> l) : Widget([UIStackView new]) {
 }
 
 HStack &HStack::spacing(int val) {
-    auto v = (UIStackView *)view;
+    auto v = (__bridge UIStackView *)view;
     [v setSpacing:val];
     return *this;
 }
@@ -712,7 +714,7 @@ DEFINE_STYLES(HStack)
 // cococa stuff
 #import <Cocoa/Cocoa.h>
 
-constexpr NSColor *col2nscol(uint32_t col) {
+NSColor *col2nscol(uint32_t col) {
     auto r = ((col >> 24) & 0xFF) / 255.0;
     auto g = ((col >> 16) & 0xFF) / 255.0;
     auto b = ((col >> 8) & 0xFF) / 255.0;
@@ -722,7 +724,7 @@ constexpr NSColor *col2nscol(uint32_t col) {
 
 #define DEFINE_STYLES(widget)                                                                      \
     widget &widget::background(uint32_t col) {                                                     \
-        auto v = (NSView *)view;                                                                   \
+        auto v = (__bridge NSView *)view;                                                          \
         v.layer.backgroundColor = col2nscol(col).CGColor;                                          \
         return *this;                                                                              \
     }                                                                                              \
@@ -731,7 +733,7 @@ constexpr NSColor *col2nscol(uint32_t col) {
         return *this;                                                                              \
     }                                                                                              \
     widget &widget::size(int w, int h) {                                                           \
-        auto v = (NSView *)view;                                                                   \
+        auto v = (__bridge NSView *)view;                                                          \
         auto frame = v.frame;                                                                      \
         frame.size.width = w;                                                                      \
         frame.size.height = h;                                                                     \
@@ -753,33 +755,36 @@ constexpr NSColor *col2nscol(uint32_t col) {
 }
 @end
 
-Widget::Widget(void *v) : view(v) { ((NSView *)view).wantsLayer = YES; }
+Widget::Widget(void *v) : view(v) { ((__bridge NSView *)view).wantsLayer = YES; }
 
 DEFINE_STYLES(Widget)
 
 Button::Button(void *b) : Widget(b) {}
 
 Button::Button(const std::string &label) : Widget([NSButton new]) {
-    [(NSButton *)view setTitle:[NSString stringWithUTF8String:label.c_str()]];
+    [(__bridge NSButton *)view setTitle:[NSString stringWithUTF8String:label.c_str()]];
 }
 
 Button &Button::filled() { return *this; }
 
 Button &Button::action(std::function<void(Widget &)> &&f) {
+    auto v = (__bridge NSButton *)view;
     cb_ = [[Callback alloc] initWithTarget:view Cb:f];
-    [(NSButton *)view setTarget:cb_];
-    [(NSButton *)view setAction:@selector(invoke)];
+    [v setTarget:cb_];
+    [v setAction:@selector(invoke)];
     return *this;
 }
 
 Button &Button::action(::id target, SEL s) {
-    [(NSButton *)view setTarget:target];
-    [(NSButton *)view setAction:s];
+    auto v = (__bridge NSButton *)view;
+    [v setTarget:target];
+    [v setAction:s];
     return *this;
 }
 
 Button &Button::foreground(uint32_t c) {
-    ((NSButton *)view).contentTintColor = col2nscol(c);
+    auto v = (__bridge NSButton *)view;
+    v.contentTintColor = col2nscol(c);
     return *this;
 }
 
@@ -788,7 +793,7 @@ DEFINE_STYLES(Button)
 Text::Text(void *b) : Widget(b) {}
 
 Text::Text(const std::string &s) : Widget([NSTextField new]) {
-    auto v = (NSTextField *)view;
+    auto v = (__bridge NSTextField *)view;
     [v setBezeled:NO];
     [v setDrawsBackground:NO];
     [v setEditable:NO];
@@ -797,25 +802,25 @@ Text::Text(const std::string &s) : Widget([NSTextField new]) {
 }
 
 Text &Text::foreground(uint32_t c) {
-    auto v = (NSTextField *)view;
+    auto v = (__bridge NSTextField *)view;
     [v setTextColor:col2nscol(c)];
     return *this;
 }
 
 Text &Text::center() {
-    auto v = (NSTextField *)view;
+    auto v = (__bridge NSTextField *)view;
     [v setAlignment:NSTextAlignmentCenter];
     return *this;
 }
 
 Text &Text::text(const std::string &s) {
-    auto v = (NSTextField *)view;
+    auto v = (__bridge NSTextField *)view;
     [v setStringValue:[NSString stringWithUTF8String:s.c_str()]];
     return *this;
 }
 
 Text &Text::fontsize(int size) {
-    auto v = (NSTextField *)view;
+    auto v = (__bridge NSTextField *)view;
     [v setFont:[NSFont systemFontOfSize:size]];
     return *this;
 }
@@ -827,30 +832,30 @@ TextField::TextField(void *b) : Widget(b) {}
 TextField::TextField() : Widget([NSTextField new]) {}
 
 TextField &TextField::foreground(uint32_t c) {
-    auto v = (NSTextField *)view;
+    auto v = (__bridge NSTextField *)view;
     [v setTextColor:c];
     return *this;
 }
 
 TextField &TextField::center() {
-    auto v = (NSTextField *)view;
+    auto v = (__bridge NSTextField *)view;
     [v setAlignment:NSTextAlignmentCenter];
     return *this;
 }
 
 TextField &TextField::text(const std::string &s) {
-    auto v = (NSTextField *)view;
+    auto v = (__bridge NSTextField *)view;
     [v setStringValue:[NSString stringWithUTF8String:s.c_str()]];
     return *this;
 }
 
 std::string TextField::text() const {
-    auto v = (NSTextField *)view;
+    auto v = (__bridge NSTextField *)view;
     return std::string([[v stringValue] UTF8String]);
 }
 
 TextField &TextField::fontsize(int size) {
-    auto v = (NSTextField *)view;
+    auto v = (__bridge NSTextField *)view;
     [v setFont:[NSFont systemFontOfSize:size]];
     return *this;
 }
@@ -867,14 +872,14 @@ MainView::MainView(void *v) : Widget(v) {}
 
 MainView::MainView(void *fvc, std::initializer_list<Widget> l) : Widget([NSStackView new]) {
     auto vc = (NSViewController *)fvc;
-    auto v = (NSStackView *)view;
+    auto v = (__bridge NSStackView *)view;
     [vc.view addSubview:view];
-    view.frame = vc.view.frame;
+    v.frame = vc.view.frame;
     [v setOrientation:NSUserInterfaceLayoutOrientationVertical];
     [v setDistribution:NSStackViewDistributionFillEqually];
     [v setAlignment:NSLayoutAttributeCenterX];
     for (auto e : l) {
-        auto w = (NSView *)e;
+        auto w = (__bridge NSView *)e.inner();
         [v addArrangedSubview:w];
         if (w.frame.size.width != 0)
             [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
@@ -890,13 +895,13 @@ DEFINE_STYLES(MainView)
 VStack::VStack(void *v) : Widget(v) {}
 
 VStack::VStack(std::initializer_list<Widget> l) : Widget([NSStackView new]) {
-    auto v = (NSStackView *)view;
+    auto v = (__bridge NSStackView *)view;
     [v setOrientation:NSUserInterfaceLayoutOrientationVertical];
     [v setDistribution:NSStackViewDistributionFillEqually];
     [v setAlignment:NSLayoutAttributeCenterX];
     [v setSpacing:10];
     for (auto e : l) {
-        auto w = (NSView *)e;
+        auto w = (__bridge NSView *)e.inner();
         [v addArrangedSubview:w];
         if (w.frame.size.width != 0)
             [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
@@ -910,13 +915,13 @@ DEFINE_STYLES(VStack)
 HStack::HStack(void *v) : Widget(v) {}
 
 HStack::HStack(std::initializer_list<Widget> l) : Widget([NSStackView new]) {
-    auto v = (NSStackView *)view;
+    auto v = (__bridge NSStackView *)view;
     [v setOrientation:NSUserInterfaceLayoutOrientationHorizontal];
     [v setDistribution:NSStackViewDistributionFillEqually];
     [v setAlignment:NSLayoutAttributeCenterY];
     [v setSpacing:10];
     for (auto e : l) {
-        auto w = (NSView *)e;
+        auto w = (__bridge NSView *)e.inner();
         [v addArrangedSubview:w];
         if (w.frame.size.width != 0)
             [w.widthAnchor constraintEqualToConstant:w.frame.size.width].active = YES;
