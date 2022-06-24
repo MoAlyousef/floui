@@ -31,11 +31,6 @@
 #include <unordered_map>
 #include <vector>
 
-#define DECLARE_STYLES(widget)                                                                     \
-    widget &background(uint32_t col);                                                              \
-    widget &id(const char *val);                                                                   \
-    widget &size(int w, int h);
-
 void floui_log(const std::string &s);
 
 #ifndef __APPLE__
@@ -62,6 +57,11 @@ class FlouiViewController {
 #endif
 #endif // __OBJC__
 #endif // __APPLE__
+
+#define DECLARE_STYLES(widget)                                                                     \
+    widget &background(uint32_t col);                                                              \
+    widget &id(const char *val);                                                                   \
+    widget &size(int w, int h);
 
 class Widget {
   protected:
