@@ -39,7 +39,7 @@ struct FlouiViewControllerImpl;
 class FlouiViewController {
     FlouiViewControllerImpl *impl;
 
-  public:
+public:
     FlouiViewController(void *, void *, void *);
     static void handle_events(void *view);
 };
@@ -64,11 +64,11 @@ class FlouiViewController {
     widget &size(int w, int h);
 
 class Widget {
-  protected:
+protected:
     static inline std::unordered_map<const char *, void *> widget_map{};
     void *view = nullptr;
 
-  public:
+public:
     explicit Widget(void *v);
     void *inner() const;
     template <typename T, typename = std::enable_if_t<std::is_base_of_v<Widget, T>>>
@@ -81,7 +81,7 @@ class Widget {
 class Button : public Widget {
     void *cb_ = nullptr;
 
-  public:
+public:
     explicit Button(void *b);
     explicit Button(const std::string &label);
     Button &text(const std::string &label);
@@ -95,7 +95,7 @@ class Button : public Widget {
 };
 
 class Text : public Widget {
-  public:
+public:
     explicit Text(void *b);
     explicit Text(const std::string &s);
     Text &center();
@@ -107,7 +107,7 @@ class Text : public Widget {
 };
 
 class TextField : public Widget {
-  public:
+public:
     explicit TextField(void *b);
     TextField();
     TextField &center();
@@ -119,14 +119,14 @@ class TextField : public Widget {
 };
 
 class Spacer : public Widget {
-  public:
+public:
     explicit Spacer(void *b);
     Spacer();
     DECLARE_STYLES(Spacer)
 };
 
 class MainView : public Widget {
-  public:
+public:
     explicit MainView(void *m);
     MainView(void *vc, std::initializer_list<Widget> l);
     MainView &spacing(int val);
@@ -134,7 +134,7 @@ class MainView : public Widget {
 };
 
 class VStack : public Widget {
-  public:
+public:
     explicit VStack(void *v);
     explicit VStack(std::initializer_list<Widget> l);
     VStack &spacing(int val);
@@ -142,7 +142,7 @@ class VStack : public Widget {
 };
 
 class HStack : public Widget {
-  public:
+public:
     explicit HStack(void *v);
     explicit HStack(std::initializer_list<Widget> l);
     HStack &spacing(int val);
@@ -169,7 +169,7 @@ struct FlouiViewControllerImpl {
 };
 
 FlouiViewController::FlouiViewController(void *env, void *m, void *layout)
-    : impl(new FlouiViewControllerImpl((JNIEnv *)env, (jobject)m, (jobject)layout)) {}
+        : impl(new FlouiViewControllerImpl((JNIEnv *)env, (jobject)m, (jobject)layout)) {}
 
 void FlouiViewController::handle_events(void *view) {
     auto v = (jobject)view;
@@ -235,14 +235,14 @@ Button::Button(void *b) : Widget(b) {}
 Button::Button(const std::string &label) : Widget(Button_init()) {
     auto v = (jobject)view;
     auto setText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
 Button &Button::text(const std::string &label) {
     auto v = (jobject)view;
     auto setText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
     return *this;
 }
@@ -279,7 +279,7 @@ Text::Text(void *b) : Widget(b) {}
 Text::Text(const std::string &label) : Widget(Text_init()) {
     auto v = (jobject)view;
     auto setText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
@@ -291,13 +291,16 @@ Text &Text::fontsize(int size) {
 }
 
 Text &Text::bold() {
+    auto v = (jobject)view;
+    auto setTypeface = c::env->GetMethodID(c::env->GetObjectClass(v), "setTypeface", "(Landroid/graphics/Typeface;I)V");
+    c::env->CallVoidMethod(v, setTypeface, (jobject)nullptr, 1);
     return *this;
 }
 
 Text &Text::text(const std::string &label) {
     auto v = (jobject)view;
     auto setText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
     return *this;
 }
@@ -339,7 +342,7 @@ TextField &TextField::fontsize(int size) {
 TextField &TextField::text(const std::string &label) {
     auto v = (jobject)view;
     auto setText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
     return *this;
 }
@@ -347,7 +350,7 @@ TextField &TextField::text(const std::string &label) {
 std::string TextField::text() const {
     auto v = (jobject)view;
     auto getText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "getText", "()Ljava/lang/CharSequence;");
+            c::env->GetMethodID(c::env->GetObjectClass(v), "getText", "()Ljava/lang/CharSequence;");
     auto ret = c::env->CallObjectMethod(v, getText);
     return std::string(reinterpret_cast<const char *>(ret));
 }
