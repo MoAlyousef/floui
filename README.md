@@ -115,45 +115,60 @@ Here we call it "activity_main", since we'll be using findViewById(R.id.activity
 #include <jni.h>
 #include <string>
 #define FLOUI_IMPL
-#include "floui.hh"
+#include "floui.hpp"
 
-static int val = 0;
+class MyViewController: FlouiViewController {
+    static inline int val = 0;
+public:
+    MyViewController(JNIEnv* env, jobject m, jobject view): FlouiViewController(env, m, view) {}
+    Widget didLoad() {
+        auto v = MainView(this, {
+                Button("Increment")
+                        .foreground(0x0000ffff)
+                        .action([=](Widget &) {
+                            val++;
+                            Widget::from_id<Text>("mytext").text(std::to_string(val).c_str());
+                        }),
+                Text("0")
+                        .center()
+                        .id("mytext")
+                        .size(400, 0)
+                        .fontsize(24),
+                Button("Decrement")
+                        .foreground(0xff0000ff)
+                        .action([=](Widget &w) {
+                            val--;
+                            Widget::from_id<Text>("mytext").text(std::to_string(val).c_str());
+                        })
+        });
+        return v;
+    }
+};
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_com_example_myapplication_MainActivity_mainView(
+Java_com_example_cppal_MainActivity_mainView(
         JNIEnv* env,
-        jobject main_activity, jobject view) {
-
-    FlouiViewController controller(env, m, view);
-    
-    auto mainView = MainView(&controller, {
-        Button("Increment").action([=](Widget) {
-            val++;
-            Widget::from_id<Text>("val").text(std::to_string(val));
-        }),
-        Text(0).id("val"),
-        Button("Decrement").action([=](Widget) {
-            val--;
-            Widget::from_id<Text>("val").text(std::to_string(val));
-        })
-    });
-    
-    return (jobject) main_view.inner();
+        jobject m, jobject view) {
+    MyViewController controller(env, m, view);
+    return (jobject) controller.didLoad().inner();
 }
-extern "C"
-JNIEXPORT void JNICALL
-Java_com_example_myapplication_MainActivity_handleEvent(JNIEnv *env, jobject thiz, jobject view) {
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_cppal_MainActivity_handleEvent(
+        JNIEnv* env,
+        jobject m, jobject view) {
     floui_jni_handle_events(view);
 }
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_com_example_myapplication_MainActivity_findNativeViewById(JNIEnv *env, jobject thiz,
-                                                               jstring id) {
+Java_com_example_cppal_MainActivity_findViewByNativeId(JNIEnv *env, jobject thiz, jstring id) {
     return (jobject)Widget::from_id<Widget>(reinterpret_cast<const char *>(id)).inner();
 }
 ```
 Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
+
+![image](https://user-images.githubusercontent.com/37966791/175548084-a0105440-dc32-4f09-be82-0029312efe7c.png)
 
 ## Todo
 - Wrap more UIKit and Android controls.
