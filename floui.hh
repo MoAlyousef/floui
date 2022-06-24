@@ -41,12 +41,13 @@ void floui_log(const std::string &s);
 #ifndef __APPLE__
 struct FlouiViewControllerImpl;
 
-struct FlouiViewController {
+class FlouiViewController {
     FlouiViewControllerImpl *impl;
-    FlouiViewController(void *, void *, void *);
-};
 
-void floui_jni_handle_events(void *view);
+  public:
+    FlouiViewController(void *, void *, void *);
+    static void handle_events(void *view);
+};
 
 #else // Android
 #ifdef __OBJC__
@@ -169,17 +170,18 @@ struct FlouiViewControllerImpl {
 FlouiViewController::FlouiViewController(void *env, void *m, void *layout)
     : impl(new FlouiViewControllerImpl((JNIEnv *)env, (jobject)m, (jobject)layout)) {}
 
-using c = FlouiViewControllerImpl;
-
-void floui_jni_handle_events(void *view) {
+void FlouiViewController::handle_events(void *view) {
     auto v = (jobject)view;
-    for (const auto obj : c::callbackmap) {
-        if (c::env->IsSameObject(obj.first, v)) { // can't depend on std::hash to get the cb
+    for (const auto obj : FlouiViewControllerImpl::callbackmap) {
+        if (FlouiViewControllerImpl::env->IsSameObject(
+                obj.first, v)) { // can't depend on std::hash to get the cb
             auto w = Widget(v);
             (*obj.second)(w);
         }
     }
 }
+
+using c = FlouiViewControllerImpl;
 
 void floui_log(const std::string &s) {
     auto cl = c::env->FindClass("android/util/Log");
@@ -188,10 +190,7 @@ void floui_log(const std::string &s) {
                                 c::env->NewStringUTF(s.c_str()));
 }
 
-constexpr uint32_t argb2rgba(uint32_t argb) {
-    return ((argb & 0x00FF0000) >> 16) | ((argb & 0x0000FF00)) | ((argb & 0x000000FF) << 16) |
-           ((argb & 0xFF000000));
-}
+constexpr uint32_t argb2rgba(uint32_t argb) { return (argb << 24) | (argb >> 8); }
 
 #define DEFINE_STYLES(widget)                                                                      \
     widget &widget::background(uint32_t col) {                                                     \

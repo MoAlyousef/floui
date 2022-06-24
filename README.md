@@ -115,12 +115,15 @@ Here we call it "activity_main", since we'll be using findViewById(R.id.activity
 #include <jni.h>
 #include <string>
 #define FLOUI_IMPL
-#include "floui.hpp"
+#include "floui.hh"
 
 class MyViewController: FlouiViewController {
     static inline int val = 0;
 public:
     MyViewController(JNIEnv* env, jobject m, jobject view): FlouiViewController(env, m, view) {}
+    static void handle_events(void *view) {
+        FlouiViewController::handle_events(view);
+    }
     Widget didLoad() {
         auto v = MainView(this, {
                 Button("Increment")
@@ -157,7 +160,7 @@ extern "C" JNIEXPORT void JNICALL
 Java_com_example_cppal_MainActivity_handleEvent(
         JNIEnv* env,
         jobject m, jobject view) {
-    floui_jni_handle_events(view);
+    MyViewController::handle_events(view);
 }
 
 extern "C"
