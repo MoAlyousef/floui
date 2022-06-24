@@ -76,6 +76,7 @@ Assuming your application is called myapplication:
 package com.example.myapplication;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.os.Bundle;
 import android.view.View;
@@ -92,8 +93,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        LinearLayout v = (LinearLayout) mainView(findViewById(R.id.activity_main));
+        ConstraintLayout layout = new ConstraintLayout(this);
+        setContentView(layout);
+        LinearLayout v = (LinearLayout) mainView(layout);
         v.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
     }
     public native View mainView(View view);
@@ -107,11 +109,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 }
 ```
 
-3- In your activity_main.xml, give your activity_main an id:
-![image](https://user-images.githubusercontent.com/37966791/175358265-9d13c0b3-0655-4c30-8bd9-e36ac5dab7d8.png)
-Here we call it "activity_main", since we'll be using findViewById(R.id.activity_main).
-
-4- In your cpp source file, replace with this boilerplate:
+3- In your cpp source file, replace with this boilerplate:
 ```cpp
 #include <jni.h>
 #include <string>
@@ -134,6 +132,7 @@ public:
                             Widget::from_id<Text>("mytext").text(std::to_string(val).c_str());
                         }),
                 Text("0")
+                        .bold()
                         .center()
                         .id("mytext")
                         .size(400, 0)
