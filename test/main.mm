@@ -91,6 +91,7 @@ int val {0};
                 .center()
                 .foreground(0xffffffff)
                 .fontsize(30)
+                .bold()
                 .background(0xff00ffff),
             Spacer().size(0, 50),
             VStack({

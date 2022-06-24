@@ -99,6 +99,7 @@ class Text : public Widget {
     explicit Text(void *b);
     explicit Text(const std::string &s);
     Text &center();
+    Text &bold();
     Text &text(const std::string &s);
     Text &foreground(uint32_t c);
     Text &fontsize(int size);
@@ -286,6 +287,10 @@ Text &Text::fontsize(int size) {
     auto v = (jobject)view;
     auto setTextSize = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextSize", "(F)V");
     c::env->CallVoidMethod(v, setTextSize, (float)size);
+    return *this;
+}
+
+Text &Text::bold() {
     return *this;
 }
 
@@ -593,6 +598,12 @@ Text &Text::fontsize(int size) {
     return *this;
 }
 
+Text &Text::bold() {
+    auto v = (__bridge UILabel *)view;
+    [v setFont:[UIFont boldSystemFontOfSize:v.font.pointSize]];
+    return *this;
+}
+
 DEFINE_STYLES(Text)
 
 TextField::TextField(void *b) : Widget(b) {}
@@ -836,6 +847,12 @@ Text &Text::text(const std::string &s) {
 Text &Text::fontsize(int size) {
     auto v = (__bridge NSTextField *)view;
     [v setFont:[NSFont systemFontOfSize:size]];
+    return *this;
+}
+
+Text &Text::bold() {
+    auto v = (__bridge NSTextField *)view;
+    [v setFont:[NSFont boldSystemFontOfSize:v.font.pointSize]];
     return *this;
 }
 
