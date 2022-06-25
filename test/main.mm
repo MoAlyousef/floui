@@ -113,18 +113,18 @@ int val {0};
             Text("Counter")
                 .size(600, 100)
                 .center()
-                .foreground(0xffffffff)
+                .foreground(Color::White)
                 .fontsize(30)
                 .bold()
-                .background(0xff00ffff),
+                .background(Color::Magenta),
             Spacer().size(0, 50),
             VStack({
                 Button("Increment")
                     .action(self, @selector(increment))
                     .size(0, 40)
                     .filled()
-                    .background(0x0000ffff)
-                    .foreground(0xffffffff),
+                    .background(Color::Rgb(0, 0, 255))
+                    .foreground(Color::Rgb(255, 255, 255, 255)),
                 Text("0").id("mytext").size(0, 50),
                 dec_btn.foreground(0xffffffff)
                         .size(0, 40)

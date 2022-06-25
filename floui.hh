@@ -25,6 +25,7 @@
 #ifndef __FLOUI_H__
 #define __FLOUI_H__
 
+#include <cstdint>
 #include <functional>
 #include <initializer_list>
 #include <string>
@@ -39,11 +40,41 @@ struct FlouiViewControllerImpl;
 class FlouiViewController {
     FlouiViewControllerImpl *impl;
 
-public:
+  public:
     FlouiViewController(void *, void *, void *);
     static void handle_events(void *view);
 };
 #endif // __ANDROID__
+
+class Color {
+    uint32_t c;
+
+  public:
+    explicit Color(uint32_t col);
+    operator uint32_t();
+    struct Rgb {
+        Rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+        uint8_t a;
+    };
+    Color(Rgb rgb);
+    enum {
+        White = 0xffffffff,
+        Red = 0xff0000ff,
+        Green = 0x00ff00ff,
+        Blue = 0x0000ffff,
+        Black = 0x000000ff,
+        Yellow = 0xffff00ff,
+        Orange = 0xff7f00ff,
+        LightGray = 0xaaaaaaff,
+        Gray = 0x7f7f7fff,
+        DarkGray = 0x555555ff,
+        Magenta = 0xff00ffff,
+    };
+    static Color system_purple();
+};
 
 #define DECLARE_STYLES(widget)                                                                     \
     widget &background(uint32_t col);                                                              \
@@ -51,11 +82,11 @@ public:
     widget &size(int w, int h);
 
 class Widget {
-protected:
+  protected:
     static inline std::unordered_map<const char *, void *> widget_map{};
     void *view = nullptr;
 
-public:
+  public:
     explicit Widget(void *v);
     void *inner() const;
     template <typename T, typename = std::enable_if_t<std::is_base_of_v<Widget, T>>>
@@ -68,7 +99,7 @@ public:
 class Button : public Widget {
     void *cb_ = nullptr;
 
-public:
+  public:
     explicit Button(void *b);
     explicit Button(const std::string &label);
     Button &text(const std::string &label);
@@ -82,7 +113,7 @@ public:
 };
 
 class Text : public Widget {
-public:
+  public:
     explicit Text(void *b);
     explicit Text(const std::string &s);
     Text &center();
@@ -94,7 +125,7 @@ public:
 };
 
 class TextField : public Widget {
-public:
+  public:
     explicit TextField(void *b);
     TextField();
     TextField &center();
@@ -106,14 +137,14 @@ public:
 };
 
 class Spacer : public Widget {
-public:
+  public:
     explicit Spacer(void *b);
     Spacer();
     DECLARE_STYLES(Spacer)
 };
 
 class MainView : public Widget {
-public:
+  public:
     explicit MainView(void *m);
     MainView(void *vc, std::initializer_list<Widget> l);
     MainView &spacing(int val);
@@ -121,7 +152,7 @@ public:
 };
 
 class VStack : public Widget {
-public:
+  public:
     explicit VStack(void *v);
     explicit VStack(std::initializer_list<Widget> l);
     VStack &spacing(int val);
@@ -129,7 +160,7 @@ public:
 };
 
 class HStack : public Widget {
-public:
+  public:
     explicit HStack(void *v);
     explicit HStack(std::initializer_list<Widget> l);
     HStack &spacing(int val);
@@ -138,9 +169,19 @@ public:
 
 #ifdef FLOUI_IMPL
 
+Color::Color(uint32_t col) : c(col) {}
+
+operator uint32_t() { return c; }
+
+Color::Rgb::Rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : r(r), g(g), b(b), a(a) {}
+
+Color::Color(Rgb rgb) : c(((rgb.r & 0xff) << 24) + ((rgb.g & 0xff) << 16) + ((rgb.b & 0xff) << 8) + (rgb.a & 0xff)) {}
+
 #ifdef __ANDROID__
 // Android stuff
 #include <jni.h>
+
+Color Color::system_purple() { return Color(0x7f007fff); }
 
 struct FlouiViewControllerImpl {
     static inline JNIEnv *env = nullptr;
@@ -156,7 +197,7 @@ struct FlouiViewControllerImpl {
 };
 
 FlouiViewController::FlouiViewController(void *env, void *m, void *layout)
-        : impl(new FlouiViewControllerImpl((JNIEnv *)env, (jobject)m, (jobject)layout)) {}
+    : impl(new FlouiViewControllerImpl((JNIEnv *)env, (jobject)m, (jobject)layout)) {}
 
 void FlouiViewController::handle_events(void *view) {
     auto v = (jobject)view;
@@ -222,14 +263,14 @@ Button::Button(void *b) : Widget(b) {}
 Button::Button(const std::string &label) : Widget(Button_init()) {
     auto v = (jobject)view;
     auto setText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
 Button &Button::text(const std::string &label) {
     auto v = (jobject)view;
     auto setText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
     return *this;
 }
@@ -266,7 +307,7 @@ Text::Text(void *b) : Widget(b) {}
 Text::Text(const std::string &label) : Widget(Text_init()) {
     auto v = (jobject)view;
     auto setText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
@@ -279,15 +320,16 @@ Text &Text::fontsize(int size) {
 
 Text &Text::bold() {
     auto v = (jobject)view;
-    auto setTypeface = c::env->GetMethodID(c::env->GetObjectClass(v), "setTypeface", "(Landroid/graphics/Typeface;I)V");
-    c::env->CallVoidMethod(v, setTypeface, (jobject)nullptr, 1);
+    auto setTypeface = c::env->GetMethodID(c::env->GetObjectClass(v), "setTypeface",
+                                           "(Landroid/graphics/Typeface;I)V");
+    c::env->CallVoidMethod(v, setTypeface, (jobject) nullptr, 1);
     return *this;
 }
 
 Text &Text::text(const std::string &label) {
     auto v = (jobject)view;
     auto setText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
     return *this;
 }
@@ -329,7 +371,7 @@ TextField &TextField::fontsize(int size) {
 TextField &TextField::text(const std::string &label) {
     auto v = (jobject)view;
     auto setText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
     return *this;
 }
@@ -337,7 +379,7 @@ TextField &TextField::text(const std::string &label) {
 std::string TextField::text() const {
     auto v = (jobject)view;
     auto getText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "getText", "()Ljava/lang/CharSequence;");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "getText", "()Ljava/lang/CharSequence;");
     auto ret = c::env->CallObjectMethod(v, getText);
     return std::string(reinterpret_cast<const char *>(ret));
 }
@@ -453,6 +495,12 @@ DEFINE_STYLES(HStack)
 #elif defined(__APPLE__)
 
 #import <Foundation/Foundation.h>
+
+Color Color::system_purple() {
+    CGFloat r = 0, g = 0, b = 0, a = 0;
+    [UIColor.purpleColor getRed:&r green:&g blue:&b alpha:&a];
+    return Color(((r*255)<<24 | (g*255)<<16 | (b*255)<<8) | (a*255));  
+}
 
 void floui_log(const std::string &s) { NSLog(@"%@", [NSString stringWithUTF8String:s.c_str()]); }
 

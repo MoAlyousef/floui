@@ -29,17 +29,17 @@ int val {0};
         Text("Counter")
             .size(600, 100)
             .center()
-            .foreground(0xffffffff)
+            .foreground(Color::White)
             .fontsize(30)
             .bold()
-            .background(0xff00ffff),
+            .background(Color::Magenta),
         Spacer().size(0, 50),
         VStack({
             Button("Increment")
                 .size(0, 40)
                 .filled()
-                .background(0x0000ffff)
-                .foreground(0xffffffff)
+                .background(Color::Rgb(0, 0, 255))
+                .foreground(Color::Rgb(255, 255, 255, 255))
                 .action([=](Widget&) {
                     val++;
                     [self updateText];
@@ -177,4 +177,3 @@ Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source 
 - Wrap more UIKit and Android controls.
 - Use proper layout constraints for the mainview to handle orientation changes. 
 - Add a Color enum with common colors.
-- Remove the OSX Cocoa desktop code at some point.
