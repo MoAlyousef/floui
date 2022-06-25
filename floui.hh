@@ -54,6 +54,7 @@ class Color {
     operator uint32_t() const;
     struct Rgb {
         Rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+        operator uint32_t() const;
         uint8_t r;
         uint8_t g;
         uint8_t b;
@@ -175,7 +176,12 @@ Color::operator uint32_t() const { return c; }
 
 Color::Rgb::Rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : r(r), g(g), b(b), a(a) {}
 
-Color::Color(Rgb rgb) : c(((rgb.r & 0xff) << 24) + ((rgb.g & 0xff) << 16) + ((rgb.b & 0xff) << 8) + (rgb.a & 0xff)) {}
+Color::Rgb::operator uint32_t() const {
+    return ((r & 0xff) << 24) + ((g & 0xff) << 16) + ((b & 0xff) << 8) + (a & 0xff);
+}
+
+Color::Color(Rgb rgb)
+    : c(((rgb.r & 0xff) << 24) + ((rgb.g & 0xff) << 16) + ((rgb.b & 0xff) << 8) + (rgb.a & 0xff)) {}
 
 #ifdef __ANDROID__
 // Android stuff
@@ -496,12 +502,6 @@ DEFINE_STYLES(HStack)
 
 #import <Foundation/Foundation.h>
 
-Color Color::system_purple() {
-    CGFloat r = 0, g = 0, b = 0, a = 0;
-    [UIColor.purpleColor getRed:&r green:&g blue:&b alpha:&a];
-    return Color(((r*255)<<24 | (g*255)<<16 | (b*255)<<8) | (a*255));  
-}
-
 void floui_log(const std::string &s) { NSLog(@"%@", [NSString stringWithUTF8String:s.c_str()]); }
 
 @interface Callback : NSObject {
@@ -533,6 +533,12 @@ void floui_log(const std::string &s) { NSLog(@"%@", [NSString stringWithUTF8Stri
 #if TARGET_OS_IPHONE
 // ios stuff
 #import <UIKit/UIKit.h>
+
+Color Color::system_purple() {
+    CGFloat r = 0, g = 0, b = 0, a = 0;
+    [UIColor.purpleColor getRed:&r green:&g blue:&b alpha:&a];
+    return Color(((r * 255) << 24 | (g * 255) << 16 | (b * 255) << 8) | (a * 255));
+}
 
 UIColor *col2uicol(uint32_t col) {
     auto r = ((col >> 24) & 0xFF) / 255.0;
