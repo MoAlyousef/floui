@@ -51,16 +51,8 @@ class Color {
 
   public:
     explicit Color(uint32_t col);
+    Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
     operator uint32_t() const;
-    struct Rgb {
-        Rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
-        operator uint32_t() const;
-        uint8_t r;
-        uint8_t g;
-        uint8_t b;
-        uint8_t a;
-    };
-    Color(Rgb rgb);
     enum {
         White = 0xffffffff,
         Red = 0xff0000ff,
@@ -75,6 +67,7 @@ class Color {
         Magenta = 0xff00ffff,
     };
     static Color system_purple();
+    static Color rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 };
 
 #define DECLARE_STYLES(widget)                                                                     \
@@ -174,14 +167,11 @@ Color::Color(uint32_t col) : c(col) {}
 
 Color::operator uint32_t() const { return c; }
 
-Color::Rgb::Rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : r(r), g(g), b(b), a(a) {}
+Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a): c(((r & 0xff) << 24) + ((g & 0xff) << 16) + ((b & 0xff) << 8) + (a & 0xff)) {}
 
-Color::Rgb::operator uint32_t() const {
-    return ((r & 0xff) << 24) + ((g & 0xff) << 16) + ((b & 0xff) << 8) + (a & 0xff);
+Color Color::rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+    return Color(r, g, b, a);
 }
-
-Color::Color(Rgb rgb)
-    : c(((rgb.r & 0xff) << 24) + ((rgb.g & 0xff) << 16) + ((rgb.b & 0xff) << 8) + (rgb.a & 0xff)) {}
 
 #ifdef __ANDROID__
 // Android stuff

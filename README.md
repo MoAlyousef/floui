@@ -38,8 +38,8 @@ int val {0};
             Button("Increment")
                 .size(0, 40)
                 .filled()
-                .background(Color::Rgb(0, 0, 255))
-                .foreground(Color::Rgb(255, 255, 255, 255))
+                .background(Color::rgb(0, 0, 255))
+                .foreground(Color::rgb(255, 255, 255, 255))
                 .action([=](Widget&) {
                     val++;
                     [self updateText];

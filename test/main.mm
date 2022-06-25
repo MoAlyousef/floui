@@ -123,8 +123,8 @@ int val {0};
                     .action(self, @selector(increment))
                     .size(0, 40)
                     .filled()
-                    .background(Color::Rgb(0, 0, 255))
-                    .foreground(Color::Rgb(255, 255, 255, 255)),
+                    .background(Color::rgb(0, 0, 255))
+                    .foreground(Color::rgb(255, 255, 255, 255)),
                 Text("0").id("mytext").size(0, 50),
                 dec_btn.foreground(0xffffffff)
                         .size(0, 40)
