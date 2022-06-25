@@ -6,9 +6,6 @@
 #define FLOUI_IMPL
 #else
 #import <Cocoa/Cocoa.h>
-#endif
-#include "../floui.hh"
-
 @interface FlouiView : NSView
 - (id)init;
 - (id)initWithFrame:(NSRect)rect;
@@ -28,6 +25,8 @@
     return YES;
 }
 @end
+#endif
+#include "../floui.hh"
 
 @interface AppDelegate :
 #if TARGET_OS_OSX
