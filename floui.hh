@@ -537,7 +537,7 @@ void floui_log(const std::string &s) { NSLog(@"%@", [NSString stringWithUTF8Stri
 Color Color::system_purple() {
     CGFloat r = 0, g = 0, b = 0, a = 0;
     [UIColor.purpleColor getRed:&r green:&g blue:&b alpha:&a];
-    return Color(((r * 255) << 24 | (g * 255) << 16 | (b * 255) << 8) | (a * 255));
+    return Color(((uint32_t)(r * 255) << 24 | (uint32_t)(g * 255) << 16 | (uint32_t)(b * 255) << 8) | (uint32_t)(a * 255));
 }
 
 UIColor *col2uicol(uint32_t col) {
