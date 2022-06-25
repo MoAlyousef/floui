@@ -173,7 +173,14 @@ Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source 
 
 ![image](https://user-images.githubusercontent.com/37966791/175548084-a0105440-dc32-4f09-be82-0029312efe7c.png)
 
+## Currently available controls:
+- Text
+- TextField
+- Button
+- VStack (Vertical UIStackView on iOS and LinearLayout on Android)
+- HStack (Horizontal UIStackView on iOS and LinearLayout on Android)
+- Spacer
+
 ## Todo
-- Wrap more UIKit and Android controls.
+- Wrap more UIKit and Android controls and their methods.
 - Use proper layout constraints for the mainview to handle orientation changes. 
-- Add a Color enum with common colors.
