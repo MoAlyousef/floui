@@ -1,7 +1,12 @@
 // This is just for testing on both iOS and macOS on CI, without storyboards and outside xcode.
 // Don't structure your code this way!
 
+#include <TargetConditionals.h>
+#if TARGET_OS_IPHONE
 #define FLOUI_IMPL
+#else
+#import <Cocoa/Cocoa.h>
+#endif
 #include "../floui.hh"
 
 @interface AppDelegate :
