@@ -176,3 +176,5 @@ Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source 
 ## Todo
 - Wrap more UIKit and Android controls.
 - Use proper layout constraints for the mainview to handle orientation changes. 
+- Add a Color enum with common colors.
+- Remove the OSX Cocoa desktop code at some point.
