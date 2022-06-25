@@ -9,6 +9,26 @@
 #endif
 #include "../floui.hh"
 
+@interface FlouiView : NSView
+- (id)init;
+- (id)initWithFrame:(NSRect)rect;
+- (BOOL)isFlipped;
+@end
+
+@implementation FlouiView
+- (id)init {
+    self = [super init];
+    return self;
+}
+- (id)initWithFrame:(NSRect)rect {
+    self = [super initWithFrame:rect];
+    return self;
+}
+- (BOOL)isFlipped {
+    return YES;
+}
+@end
+
 @interface AppDelegate :
 #if TARGET_OS_OSX
     NSObject <NSApplicationDelegate>
