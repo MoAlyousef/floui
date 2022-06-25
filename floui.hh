@@ -51,7 +51,7 @@ class Color {
 
   public:
     explicit Color(uint32_t col);
-    operator uint32_t();
+    operator uint32_t() const;
     struct Rgb {
         Rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
         uint8_t r;
@@ -171,7 +171,7 @@ class HStack : public Widget {
 
 Color::Color(uint32_t col) : c(col) {}
 
-operator uint32_t() { return c; }
+Color::operator uint32_t() const { return c; }
 
 Color::Rgb::Rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : r(r), g(g), b(b), a(a) {}
 
