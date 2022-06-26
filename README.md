@@ -1,5 +1,5 @@
 # floui
-floui, pronounced "flowy", is a single header C++ lib inspired by SwiftUI, which wraps native iOS and Android controls/widgets, and integrates into the de facto build environments of each platform (XCode and Android Studio).
+floui, pronounced "flowy", is a single header C++17 lib inspired by SwiftUI, which wraps native iOS and Android controls/widgets, and integrates into the de facto build environments of each platform (XCode and Android Studio).
 
 ## Usage
 
@@ -119,7 +119,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 class MyViewController: FlouiViewController {
     static inline int val = 0;
 public:
-    MyViewController(JNIEnv* env, jobject m, jobject view): FlouiViewController(env, m, view) {}
+    MyViewController(JNIEnv* env, jobject main_activity, jobject layout)
+        : FlouiViewController(env, main_activity, layout) {}
     static void handle_events(void *view) {
         FlouiViewController::handle_events(view);
     }
@@ -151,15 +152,15 @@ public:
 extern "C" JNIEXPORT jobject JNICALL
 Java_com_example_cppal_MainActivity_mainView(
         JNIEnv* env,
-        jobject m, jobject view) {
-    MyViewController controller(env, m, view);
+        jobject main_activity, jobject layout) {
+    MyViewController controller(env, main_activity, layout);
     return (jobject) controller.didLoad().inner();
 }
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_cppal_MainActivity_handleEvent(
         JNIEnv* env,
-        jobject m, jobject view) {
+        jobject main_activity, jobject view) {
     MyViewController::handle_events(view);
 }
 
