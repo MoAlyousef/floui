@@ -478,11 +478,10 @@ void *VStack_init() {
 
 VStack::VStack(void *m) : Widget(m) {}
 
-VStack::VStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
+VStack::VStack(std::initializer_list<Widget> l) : Widget(VStack_init()) {
     auto v = (jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
-    c::env->CallVoidMethod(c::layout, addview, v);
     for (auto &e : l) {
         c::env->CallVoidMethod(v, addview, (jobject)e.inner());
     }
@@ -496,6 +495,8 @@ void *HStack_init() {
     auto listc = c::env->FindClass("android/widget/LinearLayout");
     auto init = c::env->GetMethodID(listc, "<init>", "(Landroid/content/Context;)V");
     auto list = c::env->NewObject(listc, init, c::main_activity);
+    auto setOrientation = c::env->GetMethodID(listc, "setOrientation", "(I)V");
+    c::env->CallVoidMethod(list, setOrientation, 0 /*horizontal*/);
     auto setGravity = c::env->GetMethodID(listc, "setGravity", "(I)V");
     c::env->CallVoidMethod(list, setGravity, 17 /*center*/);
     auto v = floui_generate_id(list);
@@ -504,11 +505,10 @@ void *HStack_init() {
 
 HStack::HStack(void *m) : Widget(m) {}
 
-HStack::HStack(std::initializer_list<Widget> l) : Widget(MainView_init()) {
+HStack::HStack(std::initializer_list<Widget> l) : Widget(HStack_init()) {
     auto v = (jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
-    c::env->CallVoidMethod(c::layout, addview, v);
     for (auto &e : l) {
         c::env->CallVoidMethod(v, addview, (jobject)e.inner());
     }
