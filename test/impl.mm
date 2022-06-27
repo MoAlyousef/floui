@@ -3,6 +3,23 @@
 
 #import <Cocoa/Cocoa.h>
 
+struct FlouiViewControllerImpl {
+    static inline NSViewController *vc = nullptr;
+    static inline const char *name = nullptr;
+    static inline std::vector<Callback *> callbacks = {};
+
+    FlouiViewControllerImpl(NSViewController *vc, const char *name, void *) {
+        FlouiViewControllerImpl::vc = vc;
+        FlouiViewControllerImpl::name = name;
+    }
+};
+
+FlouiViewController::FlouiViewController(void *vc, void *name, void *)
+    : impl(new FlouiViewControllerImpl((__bridge NSViewController *)vc, (const char *)name,
+                                       nullptr)) {}
+
+void FlouiViewController::handle_events(void *) { return; }
+
 NSColor *col2nscol(uint32_t col) {
     auto r = ((col >> 24) & 0xFF) / 255.0;
     auto g = ((col >> 16) & 0xFF) / 255.0;
@@ -153,9 +170,10 @@ DEFINE_STYLES(Spacer)
 
 MainView::MainView(void *v) : Widget(v) {}
 
-MainView::MainView(void *fvc, std::initializer_list<Widget> l)
+MainView::MainView(FlouiViewController *fvc, std::initializer_list<Widget> l)
     : Widget((void *)CFBridgingRetain([NSStackView new])) {
-    auto vc = (__bridge NSViewController *)fvc;
+    assert(fvc);
+    auto vc = FlouiViewControllerImpl::vc;
     auto v = (__bridge NSStackView *)view;
     [vc.view addSubview:v];
     v.frame = vc.view.frame;

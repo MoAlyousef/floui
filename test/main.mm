@@ -109,7 +109,8 @@ int val {0};
 #if TARGET_OS_OSX
     self.view.frame = NSMakeRect(0, 0, 600, 400);
 #endif
-        MainView((void *)CFBridgingRetain(self), {
+        FlouiViewController controller((void *)CFBridgingRetain(self));
+        MainView(&controller, {
             Text("Counter")
                 .size(600, 100)
                 .center()

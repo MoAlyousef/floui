@@ -25,7 +25,9 @@ int val {0};
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    auto v = MainView((void *)CFBridgingRetain(self), {
+    FlouiViewController controller((void *)CFBridgingRetain(self));
+    
+    auto v = MainView(&controller, {
         Text("Counter")
             .size(600, 100)
             .center()
