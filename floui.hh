@@ -89,8 +89,6 @@ class Widget {
 };
 
 class Button : public Widget {
-    void *cb_ = nullptr;
-
   public:
     explicit Button(void *b);
     explicit Button(const std::string &label);
