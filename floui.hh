@@ -39,7 +39,7 @@ struct FlouiViewControllerImpl;
 class FlouiViewController {
     FlouiViewControllerImpl *impl;
 
-public:
+  public:
     FlouiViewController(void *, void * = nullptr, void * = nullptr);
     static void handle_events(void *view);
     ~FlouiViewController();
@@ -48,7 +48,7 @@ public:
 class Color {
     uint32_t c;
 
-public:
+  public:
     explicit Color(uint32_t col);
     Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
     operator uint32_t() const;
@@ -75,11 +75,11 @@ public:
     widget &size(int w, int h);
 
 class Widget {
-protected:
+  protected:
     static inline std::unordered_map<const char *, void *> widget_map{};
     void *view = nullptr;
 
-public:
+  public:
     explicit Widget(void *v);
     void *inner() const;
     template <typename T, typename = std::enable_if_t<std::is_base_of_v<Widget, T>>>
@@ -90,7 +90,7 @@ public:
 };
 
 class Button : public Widget {
-public:
+  public:
     explicit Button(void *b);
     explicit Button(const std::string &label);
     Button &text(const std::string &label);
@@ -104,7 +104,7 @@ public:
 };
 
 class Text : public Widget {
-public:
+  public:
     explicit Text(void *b);
     explicit Text(const std::string &s);
     Text &center();
@@ -116,7 +116,7 @@ public:
 };
 
 class TextField : public Widget {
-public:
+  public:
     explicit TextField(void *b);
     TextField();
     TextField &center();
@@ -128,14 +128,14 @@ public:
 };
 
 class Spacer : public Widget {
-public:
+  public:
     explicit Spacer(void *b);
     Spacer();
     DECLARE_STYLES(Spacer)
 };
 
 class MainView : public Widget {
-public:
+  public:
     explicit MainView(void *m);
     MainView(FlouiViewController *vc, std::initializer_list<Widget> l);
     MainView &spacing(int val);
@@ -143,7 +143,7 @@ public:
 };
 
 class VStack : public Widget {
-public:
+  public:
     explicit VStack(void *v);
     explicit VStack(std::initializer_list<Widget> l);
     VStack &spacing(int val);
@@ -151,7 +151,7 @@ public:
 };
 
 class HStack : public Widget {
-public:
+  public:
     explicit HStack(void *v);
     explicit HStack(std::initializer_list<Widget> l);
     HStack &spacing(int val);
@@ -165,7 +165,7 @@ Color::Color(uint32_t col) : c(col) {}
 Color::operator uint32_t() const { return c; }
 
 Color::Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-        : c(((r & 0xff) << 24) + ((g & 0xff) << 16) + ((b & 0xff) << 8) + (a & 0xff)) {}
+    : c(((r & 0xff) << 24) + ((g & 0xff) << 16) + ((b & 0xff) << 8) + (a & 0xff)) {}
 
 Color Color::rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { return Color(r, g, b, a); }
 
@@ -189,7 +189,7 @@ struct FlouiViewControllerImpl {
 };
 
 FlouiViewController::FlouiViewController(void *env, void *m, void *layout)
-        : impl(new FlouiViewControllerImpl((JNIEnv *)env, (jobject)m, (jobject)layout)) {}
+    : impl(new FlouiViewControllerImpl((JNIEnv *)env, (jobject)m, (jobject)layout)) {}
 
 static int floui_get_id(jobject view);
 
@@ -202,9 +202,7 @@ void FlouiViewController::handle_events(void *view) {
     }
 }
 
-FlouiViewController::~FlouiViewController() {
-    delete impl;
-}
+FlouiViewController::~FlouiViewController() { delete impl; }
 
 using c = FlouiViewControllerImpl;
 
@@ -275,8 +273,8 @@ DEFINE_STYLES(Widget)
 void *Button_init() {
     auto view = floui_new_view("android/widget/Button");
     auto setTransformationMethod =
-            c::env->GetMethodID(c::env->GetObjectClass(view), "setTransformationMethod",
-                                "(Landroid/text/method/TransformationMethod;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(view), "setTransformationMethod",
+                            "(Landroid/text/method/TransformationMethod;)V");
     c::env->CallVoidMethod(view, setTransformationMethod, nullptr);
     return c::env->NewWeakGlobalRef(view);
 }
@@ -286,14 +284,14 @@ Button::Button(void *b) : Widget(b) {}
 Button::Button(const std::string &label) : Widget(Button_init()) {
     auto v = (jobject)view;
     auto setText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
 Button &Button::text(const std::string &label) {
     auto v = (jobject)view;
     auto setText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
     return *this;
 }
@@ -328,7 +326,7 @@ Text::Text(void *b) : Widget(b) {}
 Text::Text(const std::string &label) : Widget(Text_init()) {
     auto v = (jobject)view;
     auto setText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
@@ -350,7 +348,7 @@ Text &Text::bold() {
 Text &Text::text(const std::string &label) {
     auto v = (jobject)view;
     auto setText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
     return *this;
 }
@@ -390,7 +388,7 @@ TextField &TextField::fontsize(int size) {
 TextField &TextField::text(const std::string &label) {
     auto v = (jobject)view;
     auto setText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
     return *this;
 }
@@ -398,7 +396,7 @@ TextField &TextField::text(const std::string &label) {
 std::string TextField::text() const {
     auto v = (jobject)view;
     auto getText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "getText", "()Ljava/lang/CharSequence;");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "getText", "()Ljava/lang/CharSequence;");
     auto ret = c::env->CallObjectMethod(v, getText);
     return std::string(reinterpret_cast<const char *>(ret));
 }
@@ -433,7 +431,7 @@ DEFINE_STYLES(Spacer)
 void *VStack_init() {
     auto view = floui_new_view("android/widget/LinearLayout");
     auto setOrientation =
-            c::env->GetMethodID(c::env->GetObjectClass(view), "setOrientation", "(I)V");
+        c::env->GetMethodID(c::env->GetObjectClass(view), "setOrientation", "(I)V");
     c::env->CallVoidMethod(view, setOrientation, 1 /*vertical*/);
     auto setGravity = c::env->GetMethodID(c::env->GetObjectClass(view), "setGravity", "(I)V");
     c::env->CallVoidMethod(view, setGravity, 17 /*center*/);
@@ -443,7 +441,7 @@ void *VStack_init() {
 MainView::MainView(void *m) : Widget(m) {}
 
 MainView::MainView(FlouiViewController *vc, std::initializer_list<Widget> l)
-        : Widget(VStack_init()) {
+    : Widget(VStack_init()) {
     auto v = (jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
@@ -480,7 +478,7 @@ DEFINE_STYLES(VStack)
 void *HStack_init() {
     auto view = floui_new_view("android/widget/LinearLayout");
     auto setOrientation =
-            c::env->GetMethodID(c::env->GetObjectClass(view), "setOrientation", "(I)V");
+        c::env->GetMethodID(c::env->GetObjectClass(view), "setOrientation", "(I)V");
     c::env->CallVoidMethod(view, setOrientation, 0 /*Horizontal*/);
     auto setGravity = c::env->GetMethodID(c::env->GetObjectClass(view), "setGravity", "(I)V");
     c::env->CallVoidMethod(view, setGravity, 17 /*center*/);
@@ -534,9 +532,7 @@ void floui_log(const std::string &s) { NSLog(@"%@", [NSString stringWithUTF8Stri
 }
 @end
 
-FlouiViewController::~FlouiViewController() {
-    delete impl;
-}
+FlouiViewController::~FlouiViewController() { delete impl; }
 
 #if TARGET_OS_IPHONE
 // ios stuff
