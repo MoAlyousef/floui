@@ -103,8 +103,8 @@ class Button : public Widget {
     DECLARE_STYLES(Button)
 };
 
-class Toggle: public Widget {
- public:
+class Toggle : public Widget {
+  public:
     explicit Toggle(void *b);
     explicit Toggle(const std::string &label);
     Toggle &value(bool val);
@@ -117,8 +117,8 @@ class Toggle: public Widget {
     DECLARE_STYLES(Toggle)
 };
 
-class Check: public Widget {
-public:
+class Check : public Widget {
+  public:
     explicit Check(void *b);
     explicit Check(const std::string &label);
     Check &value(bool val);
@@ -131,10 +131,10 @@ public:
     DECLARE_STYLES(Check)
 };
 
-class Slider: public Widget {
-public:
+class Slider : public Widget {
+  public:
     explicit Slider(void *b);
-    explicit Slider();
+    Slider();
     Slider &value(double val);
     double value();
     Slider &action(std::function<void(Widget &)> &&f);
@@ -353,8 +353,8 @@ DEFINE_STYLES(Button)
 void *Toggle_init() {
     auto view = floui_new_view("android/widget/Switch");
     auto setTransformationMethod =
-            c::env->GetMethodID(c::env->GetObjectClass(view), "setTransformationMethod",
-                                "(Landroid/text/method/TransformationMethod;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(view), "setTransformationMethod",
+                            "(Landroid/text/method/TransformationMethod;)V");
     c::env->CallVoidMethod(view, setTransformationMethod, nullptr);
     return c::env->NewWeakGlobalRef(view);
 }
@@ -364,14 +364,14 @@ Toggle::Toggle(void *b) : Widget(b) {}
 Toggle::Toggle(const std::string &label) : Widget(Toggle_init()) {
     auto v = (jobject)view;
     auto setText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
 Toggle &Toggle::value(bool val) {
     auto v = (jobject)view;
-    auto setChecked = c::env->GetMethodID(c::env->FindClass("android/widget/Switch"), "setChecked",
-                                          "(Z)V");
+    auto setChecked =
+        c::env->GetMethodID(c::env->FindClass("android/widget/Switch"), "setChecked", "(Z)V");
     c::env->CallVoidMethod(v, setChecked, val);
     return *this;
 }
@@ -403,8 +403,8 @@ DEFINE_STYLES(Toggle)
 void *Check_init() {
     auto view = floui_new_view("android/widget/CheckBox");
     auto setTransformationMethod =
-            c::env->GetMethodID(c::env->GetObjectClass(view), "setTransformationMethod",
-                                "(Landroid/text/method/TransformationMethod;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(view), "setTransformationMethod",
+                            "(Landroid/text/method/TransformationMethod;)V");
     c::env->CallVoidMethod(view, setTransformationMethod, nullptr);
     return c::env->NewWeakGlobalRef(view);
 }
@@ -414,14 +414,14 @@ Check::Check(void *b) : Widget(b) {}
 Check::Check(const std::string &label) : Widget(Check_init()) {
     auto v = (jobject)view;
     auto setText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
 Check &Check::value(bool val) {
     auto v = (jobject)view;
-    auto setChecked = c::env->GetMethodID(c::env->FindClass("android/widget/CheckBox"), "setChecked",
-                                          "(Z)V");
+    auto setChecked =
+        c::env->GetMethodID(c::env->FindClass("android/widget/CheckBox"), "setChecked", "(Z)V");
     c::env->CallVoidMethod(v, setChecked, val);
     return *this;
 }
@@ -461,8 +461,7 @@ Slider::Slider() : Widget(Slider_init()) {}
 
 Slider &Slider::value(double val) {
     auto v = (jobject)view;
-    auto setValue = c::env->GetMethodID(c::env->GetObjectClass(v), "setValue",
-                                          "(F)V");
+    auto setValue = c::env->GetMethodID(c::env->GetObjectClass(v), "setValue", "(F)V");
     c::env->CallVoidMethod(v, setValue, val);
     return *this;
 }
@@ -473,9 +472,7 @@ double Slider::value() {
     return c::env->CallFloatMethod(v, getValue);
 }
 
-Slider &Slider::foreground(uint32_t c) {
-    return *this;
-}
+Slider &Slider::foreground(uint32_t c) { return *this; }
 
 Slider &Slider::action(std::function<void(Widget &)> &&f) {
     auto v = (jobject)view;
@@ -808,8 +805,7 @@ DEFINE_STYLES(Button)
 
 Toggle::Toggle(void *b) : Widget(b) {}
 
-Toggle::Toggle(const std::string &label)
-    : Widget((void *)CFBridgingRetain([UIStackView new])) {
+Toggle::Toggle(const std::string &label) : Widget((void *)CFBridgingRetain([UIStackView new])) {
     auto v = (__bridge UIStackView *)view;
     [v setAxis:UILayoutConstraintAxisHorizontal];
     [v setDistribution:UIStackViewDistributionFillEqually];
@@ -824,45 +820,42 @@ Toggle::Toggle(const std::string &label)
 
 Toggle &Toggle::value(bool val) {
     auto v = (__bridge UIStackView *)view;
-    auto o = [[v subviews]lastObject];
+    auto o = [[v subviews] lastObject];
     [(UISwitch *)o setOn:val animated:YES];
     return *this;
 }
 
 bool Toggle::value() {
     auto v = (__bridge UISwitch *)view;
-    auto o = (UISwitch *)[[v subviews]lastObject];
+    auto o = (UISwitch *)[[v subviews] lastObject];
     return o.on;
 }
 
 Toggle &Toggle::action(std::function<void(Widget &)> &&f) {
     auto v = (__bridge UISwitch *)view;
-    auto o = [[v subviews]lastObject];
+    auto o = [[v subviews] lastObject];
     auto &callbacks = FlouiViewControllerImpl::callbacks;
     callbacks.push_back([[Callback alloc] initWithTarget:view Cb:f]);
     [(UISwitch *)o addTarget:callbacks.back()
-                  action:@selector(invoke)
-        forControlEvents:UIControlEventTouchUpInside];
+                      action:@selector(invoke)
+            forControlEvents:UIControlEventTouchUpInside];
     return *this;
 }
 
 Toggle &Toggle::action(::id target, SEL s) {
     auto v = (__bridge UISwitch *)view;
-    auto o = [[v subviews]lastObject];
+    auto o = [[v subviews] lastObject];
     [(UISwitch *)o addTarget:target action:s forControlEvents:UIControlEventTouchUpInside];
     return *this;
 }
 
-Toggle &Toggle::foreground(uint32_t c) {
-    return *this;
-}
+Toggle &Toggle::foreground(uint32_t c) { return *this; }
 
 DEFINE_STYLES(Toggle)
 
 Check::Check(void *b) : Widget(b) {}
 
-Check::Check(const std::string &label)
-    : Widget((void *)CFBridgingRetain([UIStackView new])) {
+Check::Check(const std::string &label) : Widget((void *)CFBridgingRetain([UIStackView new])) {
     auto v = (__bridge UIStackView *)view;
     [v setAxis:UILayoutConstraintAxisHorizontal];
     [v setDistribution:UIStackViewDistributionFillEqually];
@@ -878,46 +871,43 @@ Check::Check(const std::string &label)
 
 Check &Check::value(bool val) {
     auto v = (__bridge UIStackView *)view;
-    auto o = [[v subviews]lastObject];
+    auto o = [[v subviews] lastObject];
     [(UISwitch *)o setOn:val animated:YES];
     return *this;
 }
 
 bool Check::value() {
     auto v = (__bridge UISwitch *)view;
-    auto o = (UISwitch *)[[v subviews]lastObject];
+    auto o = (UISwitch *)[[v subviews] lastObject];
     return o.on;
 }
 
 Check &Check::action(std::function<void(Widget &)> &&f) {
     auto v = (__bridge UISwitch *)view;
-    auto o = [[v subviews]lastObject];
+    auto o = [[v subviews] lastObject];
     auto &callbacks = FlouiViewControllerImpl::callbacks;
     callbacks.push_back([[Callback alloc] initWithTarget:view Cb:f]);
     [(UISwitch *)o addTarget:callbacks.back()
-                  action:@selector(invoke)
-        forControlEvents:UIControlEventTouchUpInside];
+                      action:@selector(invoke)
+            forControlEvents:UIControlEventTouchUpInside];
     return *this;
 }
 
 Check &Check::action(::id target, SEL s) {
     auto v = (__bridge UISwitch *)view;
-    auto o = [[v subviews]lastObject];
+    auto o = [[v subviews] lastObject];
     [(UISwitch *)o addTarget:target action:s forControlEvents:UIControlEventTouchUpInside];
     return *this;
 }
 
-Check &Check::foreground(uint32_t c) {
-    return *this;
-}
+Check &Check::foreground(uint32_t c) { return *this; }
 
 DEFINE_STYLES(Check)
 
 Slider::Slider(void *b) : Widget(b) {}
 
-Slider::Slider()
-    : Widget((void *)CFBridgingRetain([UISlider new])) {
-//    auto v = (__bridge UISlider *)view;
+Slider::Slider() : Widget((void *)CFBridgingRetain([UISlider new])) {
+    //    auto v = (__bridge UISlider *)view;
 }
 
 Slider &Slider::value(double val) {
@@ -947,9 +937,7 @@ Slider &Slider::action(::id target, SEL s) {
     return *this;
 }
 
-Slider &Slider::foreground(uint32_t c) {
-    return *this;
-}
+Slider &Slider::foreground(uint32_t c) { return *this; }
 
 DEFINE_STYLES(Slider)
 
