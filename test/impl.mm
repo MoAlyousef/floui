@@ -63,8 +63,9 @@ Button &Button::filled() { return *this; }
 
 Button &Button::action(std::function<void(Widget &)> &&f) {
     auto v = (__bridge NSButton *)view;
-    cb_ = (void *)CFBridgingRetain([[Callback alloc] initWithTarget:view Cb:f]);
-    [v setTarget:(__bridge Callback *)cb_];
+    auto &callbacks = FlouiViewControllerImpl::callbacks;
+    callbacks.push_back([[Callback alloc] initWithTarget:view Cb:f]);
+    [v setTarget:callbacks.back()];
     [v setAction:@selector(invoke)];
     return *this;
 }
