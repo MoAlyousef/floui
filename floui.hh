@@ -107,7 +107,6 @@ class Toggle: public Widget {
  public:
     explicit Toggle(void *b);
     explicit Toggle(const std::string &label);
-    Toggle &text(const std::string &label);
     Toggle &value(bool val);
     bool value();
     Toggle &action(std::function<void(Widget &)> &&f);
@@ -116,6 +115,20 @@ class Toggle: public Widget {
 #endif
     Toggle &foreground(uint32_t c);
     DECLARE_STYLES(Toggle)
+};
+
+class Check: public Widget {
+public:
+    explicit Check(void *b);
+    explicit Check(const std::string &label);
+    Check &value(bool val);
+    bool value();
+    Check &action(std::function<void(Widget &)> &&f);
+#ifdef __APPLE__
+    Check &action(::id target, SEL s);
+#endif
+    Check &foreground(uint32_t c);
+    DECLARE_STYLES(Check)
 };
 
 class Text : public Widget {
@@ -341,14 +354,6 @@ Toggle::Toggle(const std::string &label) : Widget(Toggle_init()) {
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
-Toggle &Toggle::text(const std::string &label) {
-    auto v = (jobject)view;
-    auto setText =
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
-    c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
-    return *this;
-}
-
 Toggle &Toggle::value(bool val) {
     auto v = (jobject)view;
     auto setChecked = c::env->GetMethodID(c::env->FindClass("android/widget/Switch"), "setChecked",
@@ -380,6 +385,56 @@ Toggle &Toggle::action(std::function<void(Widget &)> &&f) {
 }
 
 DEFINE_STYLES(Toggle)
+
+void *Check_init() {
+    auto view = floui_new_view("android/widget/CheckBox");
+    auto setTransformationMethod =
+            c::env->GetMethodID(c::env->GetObjectClass(view), "setTransformationMethod",
+                                "(Landroid/text/method/TransformationMethod;)V");
+    c::env->CallVoidMethod(view, setTransformationMethod, nullptr);
+    return c::env->NewWeakGlobalRef(view);
+}
+
+Check::Check(void *b) : Widget(b) {}
+
+Check::Check(const std::string &label) : Widget(Check_init()) {
+    auto v = (jobject)view;
+    auto setText =
+            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+    c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
+}
+
+Check &Check::value(bool val) {
+    auto v = (jobject)view;
+    auto setChecked = c::env->GetMethodID(c::env->FindClass("android/widget/CheckBox"), "setChecked",
+                                          "(Z)V");
+    c::env->CallVoidMethod(v, setChecked, val);
+    return *this;
+}
+
+bool Check::value() {
+    auto v = (jobject)view;
+    auto isChecked = c::env->GetMethodID(c::env->GetObjectClass(v), "isChecked", "()Z");
+    return c::env->CallBooleanMethod(v, isChecked);
+}
+
+Check &Check::foreground(uint32_t c) {
+    auto v = (jobject)view;
+    auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
+    c::env->CallVoidMethod(v, setTextColor, argb2rgba(c));
+    return *this;
+}
+
+Check &Check::action(std::function<void(Widget &)> &&f) {
+    auto v = (jobject)view;
+    auto setOnClickListener = c::env->GetMethodID(c::env->GetObjectClass(v), "setOnClickListener",
+                                                  "(Landroid/view/View$OnClickListener;)V");
+    c::env->CallVoidMethod(v, setOnClickListener, c::main_activity);
+    c::callbackmap[floui_get_id(v)] = new std::function<void(Widget &)>(f);
+    return *this;
+}
+
+DEFINE_STYLES(Check)
 
 void *Text_init() {
     auto view = floui_new_view("android/widget/TextView");
@@ -704,8 +759,8 @@ Toggle::Toggle(void *b) : Widget(b) {}
 Toggle::Toggle(const std::string &label)
     : Widget((void *)CFBridgingRetain([UIButton buttonWithType:UIButtonTypeCustom])) {
     auto v = (__bridge UISwitch *)view;
-    [v setTitle:[NSString stringWithUTF8String:label.c_str()] forState:UIControlStateNormal];
-    [v setTitleColor:UIColor.blueColor forState:UIControlStateNormal];
+    [v setTitle:[NSString stringWithUTF8String:label.c_str()]];
+    [v setTitleColor:UIColor.blueColor];
 }
 
 Toggle &Toggle::value(bool val) {
@@ -737,11 +792,57 @@ Toggle &Toggle::action(::id target, SEL s) {
 
 Toggle &Toggle::foreground(uint32_t c) {
     auto v = (__bridge UISwitch *)view;
-    [v setTitleColor:col2uicol(c) forState:UIControlStateNormal];
+    [v setTitleColor:col2uicol(c)];
     return *this;
 }
 
 DEFINE_STYLES(Toggle)
+
+
+Check::Check(void *b) : Widget(b) {}
+
+Check::Check(const std::string &label)
+    : Widget((void *)CFBridgingRetain([UIButton buttonWithType:UIButtonTypeCustom])) {
+    auto v = (__bridge UISwitch *)view;
+    v.style = UISwitchStyleCheckbox;
+    [v setTitle:[NSString stringWithUTF8String:label.c_str()]];
+    [v setTitleColor:UIColor.blueColor];
+}
+
+Toggle &Check::value(bool val) {
+    auto v = (__bridge UISwitch *)view;
+    [v setOn:val animated:YES];
+    return *this;
+}
+
+bool Check::value() {
+    auto v = (__bridge UISwitch *)view;
+    return v.on;
+}
+
+Check &Check::action(std::function<void(Widget &)> &&f) {
+    auto v = (__bridge UISwitch *)view;
+    auto &callbacks = FlouiViewControllerImpl::callbacks;
+    callbacks.push_back([[Callback alloc] initWithTarget:view Cb:f]);
+    [v addTarget:callbacks.back()
+                  action:@selector(invoke)
+        forControlEvents:UIControlEventTouchUpInside];
+    return *this;
+}
+
+Check &Check::action(::id target, SEL s) {
+    auto v = (__bridge UISwitch *)view;
+    [v addTarget:target action:s forControlEvents:UIControlEventTouchUpInside];
+    return *this;
+}
+
+Check &Check::foreground(uint32_t c) {
+    auto v = (__bridge UISwitch *)view;
+    [v setTitleColor:col2uicol(c)];
+    return *this;
+}
+
+DEFINE_STYLES(Check)
 
 Text::Text(void *b) : Widget(b) {}
 
