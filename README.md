@@ -128,12 +128,12 @@ Java_com_example_myapplication_MainActivity_mainView(
     FlouiViewController controller(env, main_activity, view);
 
     auto main_view = MainView(&controller, {
-        Button("Increment").action([](Widget) {
+        Button("Increment").action([=](Widget&) {
             val++;
             Widget::from_id<Text>("val").text(std::to_string(val));
         }),
         Text("0").center().bold().fontsize(20).foreground(Color::Black).id("val"),
-        Button("Decrement").action([](Widget) {
+        Button("Decrement").action([=](Widget&) {
             val--;
             Widget::from_id<Text>("val").text(std::to_string(val));
         })
