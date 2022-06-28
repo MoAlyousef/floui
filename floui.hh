@@ -190,28 +190,29 @@ struct FlouiViewControllerImpl {
 FlouiViewController::FlouiViewController(void *env, void *m, void *layout)
     : impl(new FlouiViewControllerImpl((JNIEnv *)env, (jobject)m, (jobject)layout)) {}
 
-int floui_get_id(jobject view);
+static int floui_get_id(jobject view);
 
 void FlouiViewController::handle_events(void *view) {
     auto v = (jobject)view;
-    try {
-        auto cb = FlouiViewControllerImpl::callbackmap.at(floui_get_id(v));
+    auto elem = FlouiViewControllerImpl::callbackmap.find(floui_get_id(v));
+    if (elem != FlouiViewControllerImpl::callbackmap.end()) {
         auto w = Widget(v);
-        (*cb)(w);
-    } catch (...) {
-        floui_log("Jobject not found in callback map!");
+        (*elem->second)(w);
     }
 }
 
 using c = FlouiViewControllerImpl;
 
-static jobject floui_generate_id(jobject view) {
+static jobject floui_new_view(const char *klass) {
+    auto k = c::env->FindClass(klass);
+    auto init = c::env->GetMethodID(k, "<init>", "(Landroid/content/Context;)V");
+    auto obj = c::env->NewObject(k, init, c::main_activity);
     auto viewc = c::env->FindClass("android/view/View");
     auto generateViewId = c::env->GetStaticMethodID(viewc, "generateViewId", "()I");
     auto id = c::env->CallStaticIntMethod(viewc, generateViewId);
-    auto setId = c::env->GetMethodID(c::env->GetObjectClass(view), "setId", "(I)V");
-    c::env->CallVoidMethod(view, setId, id);
-    return view;
+    auto setId = c::env->GetMethodID(c::env->GetObjectClass(obj), "setId", "(I)V");
+    c::env->CallVoidMethod(obj, setId, id);
+    return obj;
 }
 
 static jobject floui_get_by_id(int val) {
@@ -221,7 +222,7 @@ static jobject floui_get_by_id(int val) {
     return v;
 }
 
-static int floui_get_id(jobject view) {
+int floui_get_id(jobject view) {
     auto viewc = c::env->FindClass("android/view/View");
     auto getId = c::env->GetMethodID(viewc, "getId", "()I");
     return c::env->CallIntMethod(view, getId);
@@ -267,14 +268,12 @@ void *Widget::inner() const { return view; }
 DEFINE_STYLES(Widget)
 
 void *Button_init() {
-    auto btnc = c::env->FindClass("android/widget/Button");
-    auto init = c::env->GetMethodID(btnc, "<init>", "(Landroid/content/Context;)V");
-    auto btn = c::env->NewObject(btnc, init, c::main_activity);
-    auto setTransformationMethod = c::env->GetMethodID(
-        btnc, "setTransformationMethod", "(Landroid/text/method/TransformationMethod;)V");
-    c::env->CallVoidMethod(btn, setTransformationMethod, nullptr);
-    auto b = floui_generate_id(btn);
-    return c::env->NewWeakGlobalRef(b);
+    auto view = floui_new_view("android/widget/Button");
+    auto setTransformationMethod =
+        c::env->GetMethodID(c::env->GetObjectClass(view), "setTransformationMethod",
+                            "(Landroid/text/method/TransformationMethod;)V");
+    c::env->CallVoidMethod(view, setTransformationMethod, nullptr);
+    return c::env->NewWeakGlobalRef(view);
 }
 
 Button::Button(void *b) : Widget(b) {}
@@ -315,11 +314,8 @@ Button &Button::action(std::function<void(Widget &)> &&f) {
 DEFINE_STYLES(Button)
 
 void *Text_init() {
-    auto tvc = c::env->FindClass("android/widget/TextView");
-    auto init = c::env->GetMethodID(tvc, "<init>", "(Landroid/content/Context;)V");
-    auto tv = c::env->NewObject(tvc, init, c::main_activity);
-    auto v = floui_generate_id(tv);
-    return c::env->NewWeakGlobalRef(v);
+    auto view = floui_new_view("android/widget/TextView");
+    return c::env->NewWeakGlobalRef(view);
 }
 
 Text::Text(void *b) : Widget(b) {}
@@ -371,11 +367,8 @@ Text &Text::foreground(uint32_t c) {
 DEFINE_STYLES(Text)
 
 void *TextField_init() {
-    auto tvc = c::env->FindClass("android/widget/EditText");
-    auto init = c::env->GetMethodID(tvc, "<init>", "(Landroid/content/Context;)V");
-    auto tv = c::env->NewObject(tvc, init, c::main_activity);
-    auto v = floui_generate_id(tv);
-    return c::env->NewWeakGlobalRef(v);
+    auto view = floui_new_view("android/widget/EditText");
+    return c::env->NewWeakGlobalRef(view);
 }
 
 TextField::TextField(void *b) : Widget(b) {}
@@ -422,11 +415,8 @@ TextField &TextField::foreground(uint32_t c) {
 DEFINE_STYLES(TextField)
 
 void *Spacer_init() {
-    auto sc = c::env->FindClass("android/widget/Space");
-    auto init = c::env->GetMethodID(sc, "<init>", "(Landroid/content/Context;)V");
-    auto s = c::env->NewObject(sc, init, c::main_activity);
-    auto v = floui_generate_id(s);
-    return c::env->NewWeakGlobalRef(v);
+    auto view = floui_new_view("android/widget/Space");
+    return c::env->NewWeakGlobalRef(view);
 }
 
 Spacer::Spacer(void *b) : Widget(b) {}
@@ -435,22 +425,20 @@ Spacer::Spacer() : Widget(Spacer_init()) {}
 
 DEFINE_STYLES(Spacer)
 
-void *MainView_init() {
-    auto listc = c::env->FindClass("android/widget/LinearLayout");
-    auto init = c::env->GetMethodID(listc, "<init>", "(Landroid/content/Context;)V");
-    auto list = c::env->NewObject(listc, init, c::main_activity);
-    auto setOrientation = c::env->GetMethodID(listc, "setOrientation", "(I)V");
-    c::env->CallVoidMethod(list, setOrientation, 1 /*vertical*/);
-    auto setGravity = c::env->GetMethodID(listc, "setGravity", "(I)V");
-    c::env->CallVoidMethod(list, setGravity, 17 /*center*/);
-    auto v = floui_generate_id(list);
-    return c::env->NewWeakGlobalRef(v);
+void *VStack_init() {
+    auto view = floui_new_view("android/widget/LinearLayout");
+    auto setOrientation =
+        c::env->GetMethodID(c::env->GetObjectClass(view), "setOrientation", "(I)V");
+    c::env->CallVoidMethod(view, setOrientation, 1 /*vertical*/);
+    auto setGravity = c::env->GetMethodID(c::env->GetObjectClass(view), "setGravity", "(I)V");
+    c::env->CallVoidMethod(view, setGravity, 17 /*center*/);
+    return c::env->NewWeakGlobalRef(view);
 }
 
 MainView::MainView(void *m) : Widget(m) {}
 
 MainView::MainView(FlouiViewController *vc, std::initializer_list<Widget> l)
-    : Widget(MainView_init()) {
+    : Widget(VStack_init()) {
     auto v = (jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
@@ -463,18 +451,6 @@ MainView::MainView(FlouiViewController *vc, std::initializer_list<Widget> l)
 MainView &MainView::spacing(int space) { return *this; }
 
 DEFINE_STYLES(MainView)
-
-void *VStack_init() {
-    auto listc = c::env->FindClass("android/widget/LinearLayout");
-    auto init = c::env->GetMethodID(listc, "<init>", "(Landroid/content/Context;)V");
-    auto list = c::env->NewObject(listc, init, c::main_activity);
-    auto setOrientation = c::env->GetMethodID(listc, "setOrientation", "(I)V");
-    c::env->CallVoidMethod(list, setOrientation, 1 /*vertical*/);
-    auto setGravity = c::env->GetMethodID(listc, "setGravity", "(I)V");
-    c::env->CallVoidMethod(list, setGravity, 17 /*center*/);
-    auto v = floui_generate_id(list);
-    return c::env->NewWeakGlobalRef(v);
-}
 
 VStack::VStack(void *m) : Widget(m) {}
 
@@ -492,15 +468,13 @@ VStack &VStack::spacing(int space) { return *this; }
 DEFINE_STYLES(VStack)
 
 void *HStack_init() {
-    auto listc = c::env->FindClass("android/widget/LinearLayout");
-    auto init = c::env->GetMethodID(listc, "<init>", "(Landroid/content/Context;)V");
-    auto list = c::env->NewObject(listc, init, c::main_activity);
-    auto setOrientation = c::env->GetMethodID(listc, "setOrientation", "(I)V");
-    c::env->CallVoidMethod(list, setOrientation, 0 /*horizontal*/);
-    auto setGravity = c::env->GetMethodID(listc, "setGravity", "(I)V");
-    c::env->CallVoidMethod(list, setGravity, 17 /*center*/);
-    auto v = floui_generate_id(list);
-    return c::env->NewWeakGlobalRef(v);
+    auto view = floui_new_view("android/widget/LinearLayout");
+    auto setOrientation =
+        c::env->GetMethodID(c::env->GetObjectClass(view), "setOrientation", "(I)V");
+    c::env->CallVoidMethod(view, setOrientation, 0 /*Horizontal*/);
+    auto setGravity = c::env->GetMethodID(c::env->GetObjectClass(view), "setGravity", "(I)V");
+    c::env->CallVoidMethod(view, setGravity, 17 /*center*/);
+    return c::env->NewWeakGlobalRef(view);
 }
 
 HStack::HStack(void *m) : Widget(m) {}

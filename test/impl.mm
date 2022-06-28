@@ -1,3 +1,5 @@
+// An implementation for osx cocoa, only for testing purposes
+
 #define FLOUI_IMPL
 #include "../floui.hh"
 
