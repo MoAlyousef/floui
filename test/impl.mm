@@ -22,6 +22,8 @@ FlouiViewController::FlouiViewController(void *vc, void *name, void *)
 
 void FlouiViewController::handle_events(void *) { return; }
 
+FlouiViewController::~FlouiViewController() { delete impl; }
+
 NSColor *col2nscol(uint32_t col) {
     auto r = ((col >> 24) & 0xFF) / 255.0;
     auto g = ((col >> 16) & 0xFF) / 255.0;

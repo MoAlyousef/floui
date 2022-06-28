@@ -532,8 +532,6 @@ void floui_log(const std::string &s) { NSLog(@"%@", [NSString stringWithUTF8Stri
 }
 @end
 
-FlouiViewController::~FlouiViewController() { delete impl; }
-
 #if TARGET_OS_IPHONE
 // ios stuff
 #import <UIKit/UIKit.h>
@@ -554,6 +552,8 @@ FlouiViewController::FlouiViewController(void *vc, void *name, void *)
                                        nullptr)) {}
 
 void FlouiViewController::handle_events(void *) { return; }
+
+FlouiViewController::~FlouiViewController() { delete impl; }
 
 Color Color::system_purple() {
     CGFloat r = 0, g = 0, b = 0, a = 0;
