@@ -205,7 +205,7 @@ void FlouiViewController::handle_events(void *view) {
 
 using c = FlouiViewControllerImpl;
 
-jobject floui_generate_id(jobject view) {
+static jobject floui_generate_id(jobject view) {
     auto viewc = c::env->FindClass("android/view/View");
     auto generateViewId = c::env->GetStaticMethodID(viewc, "generateViewId", "()I");
     auto id = c::env->CallStaticIntMethod(viewc, generateViewId);
@@ -214,14 +214,14 @@ jobject floui_generate_id(jobject view) {
     return view;
 }
 
-jobject floui_get_by_id(int val) {
+static jobject floui_get_by_id(int val) {
     auto viewc = c::env->FindClass("android/view/View");
     auto findViewById = c::env->GetMethodID(viewc, "findViewById", "(I)Landroid/view/View;");
     auto v = c::env->CallObjectMethod(c::main_activity, findViewById, val);
     return v;
 }
 
-int floui_get_id(jobject view) {
+static int floui_get_id(jobject view) {
     auto viewc = c::env->FindClass("android/view/View");
     auto getId = c::env->GetMethodID(viewc, "getId", "()I");
     return c::env->CallIntMethod(view, getId);
@@ -234,7 +234,7 @@ void floui_log(const std::string &s) {
                                 c::env->NewStringUTF(s.c_str()));
 }
 
-constexpr uint32_t argb2rgba(uint32_t argb) { return (argb << 24) | (argb >> 8); }
+static constexpr uint32_t argb2rgba(uint32_t argb) { return (argb << 24) | (argb >> 8); }
 
 #define DEFINE_STYLES(widget)                                                                      \
     widget &widget::background(uint32_t col) {                                                     \
@@ -579,7 +579,7 @@ Color Color::system_purple() {
         (uint32_t)(a * 255));
 }
 
-UIColor *col2uicol(uint32_t col) {
+static UIColor *col2uicol(uint32_t col) {
     auto r = ((col >> 24) & 0xFF) / 255.0;
     auto g = ((col >> 16) & 0xFF) / 255.0;
     auto b = ((col >> 8) & 0xFF) / 255.0;
