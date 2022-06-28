@@ -131,6 +131,20 @@ public:
     DECLARE_STYLES(Check)
 };
 
+class Slider: public Widget {
+public:
+    explicit Slider(void *b);
+    explicit Slider();
+    Slider &value(double val);
+    double value();
+    Slider &action(std::function<void(Widget &)> &&f);
+#ifdef __APPLE__
+    Slider &action(::id target, SEL s);
+#endif
+    Slider &foreground(uint32_t c);
+    DECLARE_STYLES(Slider)
+};
+
 class Text : public Widget {
   public:
     explicit Text(void *b);
@@ -757,28 +771,38 @@ DEFINE_STYLES(Button)
 Toggle::Toggle(void *b) : Widget(b) {}
 
 Toggle::Toggle(const std::string &label)
-    : Widget((void *)CFBridgingRetain([UIButton buttonWithType:UIButtonTypeCustom])) {
-    auto v = (__bridge UISwitch *)view;
-    [v setTitle:[NSString stringWithUTF8String:label.c_str()]];
-    [v setTitleColor:UIColor.blueColor];
+    : Widget((void *)CFBridgingRetain([UIStackView new])) {
+    auto v = (__bridge UIStackView *)view;
+    [v setAxis:UILayoutConstraintAxisHorizontal];
+    [v setDistribution:UIStackViewDistributionFillEqually];
+    [v setAlignment:UIStackViewAlignmentCenter];
+    [v setSpacing:10];
+    auto l = [UILabel new];
+    [l setText:[NSString stringWithUTF8String:label.c_str()]];
+    [v addArrangedSubview:l];
+    auto s = [UISwitch new];
+    [v addArrangedSubview:s];
 }
 
 Toggle &Toggle::value(bool val) {
-    auto v = (__bridge UISwitch *)view;
-    [v setOn:val animated:YES];
+    auto v = (__bridge UIStackView *)view;
+    auto o = [[v subviews]lastObject];
+    [(UISwitch *)o setOn:val animated:YES];
     return *this;
 }
 
 bool Toggle::value() {
     auto v = (__bridge UISwitch *)view;
-    return v.on;
+    auto o = (UISwitch *)[[v subviews]lastObject];
+    return o.on;
 }
 
 Toggle &Toggle::action(std::function<void(Widget &)> &&f) {
     auto v = (__bridge UISwitch *)view;
+    auto o = [[v subviews]lastObject];
     auto &callbacks = FlouiViewControllerImpl::callbacks;
     callbacks.push_back([[Callback alloc] initWithTarget:view Cb:f]);
-    [v addTarget:callbacks.back()
+    [(UISwitch *)o addTarget:callbacks.back()
                   action:@selector(invoke)
         forControlEvents:UIControlEventTouchUpInside];
     return *this;
@@ -786,42 +810,91 @@ Toggle &Toggle::action(std::function<void(Widget &)> &&f) {
 
 Toggle &Toggle::action(::id target, SEL s) {
     auto v = (__bridge UISwitch *)view;
-    [v addTarget:target action:s forControlEvents:UIControlEventTouchUpInside];
+    auto o = [[v subviews]lastObject];
+    [(UISwitch *)o addTarget:target action:s forControlEvents:UIControlEventTouchUpInside];
     return *this;
 }
 
 Toggle &Toggle::foreground(uint32_t c) {
-    auto v = (__bridge UISwitch *)view;
-    [v setTitleColor:col2uicol(c)];
     return *this;
 }
 
 DEFINE_STYLES(Toggle)
 
-
 Check::Check(void *b) : Widget(b) {}
 
 Check::Check(const std::string &label)
-    : Widget((void *)CFBridgingRetain([UIButton buttonWithType:UIButtonTypeCustom])) {
-    auto v = (__bridge UISwitch *)view;
-    v.style = UISwitchStyleCheckbox;
-    [v setTitle:[NSString stringWithUTF8String:label.c_str()]];
-    [v setTitleColor:UIColor.blueColor];
+    : Widget((void *)CFBridgingRetain([UIStackView new])) {
+    auto v = (__bridge UIStackView *)view;
+    [v setAxis:UILayoutConstraintAxisHorizontal];
+    [v setDistribution:UIStackViewDistributionFillEqually];
+    [v setAlignment:UIStackViewAlignmentCenter];
+    [v setSpacing:10];
+    auto l = [UILabel new];
+    [l setText:[NSString stringWithUTF8String:label.c_str()]];
+    [v addArrangedSubview:l];
+    auto s = [UISwitch new];
+    [s setPreferredStyle:UISwitchStyleCheckbox];
+    [v addArrangedSubview:s];
 }
 
-Toggle &Check::value(bool val) {
-    auto v = (__bridge UISwitch *)view;
-    [v setOn:val animated:YES];
+Check &Check::value(bool val) {
+    auto v = (__bridge UIStackView *)view;
+    auto o = [[v subviews]lastObject];
+    [(UISwitch *)o setOn:val animated:YES];
     return *this;
 }
 
 bool Check::value() {
     auto v = (__bridge UISwitch *)view;
-    return v.on;
+    auto o = (UISwitch *)[[v subviews]lastObject];
+    return o.on;
 }
 
 Check &Check::action(std::function<void(Widget &)> &&f) {
     auto v = (__bridge UISwitch *)view;
+    auto o = [[v subviews]lastObject];
+    auto &callbacks = FlouiViewControllerImpl::callbacks;
+    callbacks.push_back([[Callback alloc] initWithTarget:view Cb:f]);
+    [(UISwitch *)o addTarget:callbacks.back()
+                  action:@selector(invoke)
+        forControlEvents:UIControlEventTouchUpInside];
+    return *this;
+}
+
+Check &Check::action(::id target, SEL s) {
+    auto v = (__bridge UISwitch *)view;
+    auto o = [[v subviews]lastObject];
+    [(UISwitch *)o addTarget:target action:s forControlEvents:UIControlEventTouchUpInside];
+    return *this;
+}
+
+Check &Check::foreground(uint32_t c) {
+    return *this;
+}
+
+DEFINE_STYLES(Check)
+
+Slider::Slider(void *b) : Widget(b) {}
+
+Slider::Slider()
+    : Widget((void *)CFBridgingRetain([UISlider new])) {
+//    auto v = (__bridge UISlider *)view;
+}
+
+Slider &Slider::value(double val) {
+    auto v = (__bridge UISlider *)view;
+    [v setValue:val];
+    return *this;
+}
+
+double Slider::value() {
+    auto v = (__bridge UISlider *)view;
+    return v.value;
+}
+
+Slider &Slider::action(std::function<void(Widget &)> &&f) {
+    auto v = (__bridge UISlider *)view;
     auto &callbacks = FlouiViewControllerImpl::callbacks;
     callbacks.push_back([[Callback alloc] initWithTarget:view Cb:f]);
     [v addTarget:callbacks.back()
@@ -830,19 +903,17 @@ Check &Check::action(std::function<void(Widget &)> &&f) {
     return *this;
 }
 
-Check &Check::action(::id target, SEL s) {
-    auto v = (__bridge UISwitch *)view;
+Slider &Slider::action(::id target, SEL s) {
+    auto v = (__bridge UISlider *)view;
     [v addTarget:target action:s forControlEvents:UIControlEventTouchUpInside];
     return *this;
 }
 
-Check &Check::foreground(uint32_t c) {
-    auto v = (__bridge UISwitch *)view;
-    [v setTitleColor:col2uicol(c)];
+Slider &Slider::foreground(uint32_t c) {
     return *this;
 }
 
-DEFINE_STYLES(Check)
+DEFINE_STYLES(Slider)
 
 Text::Text(void *b) : Widget(b) {}
 

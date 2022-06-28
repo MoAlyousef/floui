@@ -162,6 +162,8 @@ Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source 
 - VStack (Vertical UIStackView on iOS and LinearLayout on Android)
 - HStack (Horizontal UIStackView on iOS and LinearLayout on Android)
 - Spacer
+- Toggle/Check
+- Slider
 
 ## Todo
 - Wrap more UIKit and Android controls and their methods.
