@@ -443,6 +443,11 @@ MainView::MainView(FlouiViewController *vc, std::initializer_list<Widget> l)
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
     c::env->CallVoidMethod(c::layout, addview, v);
+    auto getLayoutParams = c::env->GetMethodID(c::env->GetObjectClass(c::layout), "getLayoutParams",
+                                            "()Landroid/view/ViewGroup$LayoutParams;");
+    auto params = c::env->CallObjectMethod(v, getLayoutParams);
+    auto width = c::env->GetFieldID(c::env->GetObjectClass(params), "width", "I");
+    c::env->SetIntField(params, width, -1);
     for (auto &e : l) {
         c::env->CallVoidMethod(v, addview, (jobject)e.inner());
     }

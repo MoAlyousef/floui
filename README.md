@@ -97,8 +97,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         ConstraintLayout layout = new ConstraintLayout(this);
         setContentView(layout);
-        LinearLayout v = (LinearLayout) mainView(layout);
-        v.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;
+        mainView(layout);
     }
     public native View mainView(View view);
     public native void handleEvent(View view);
