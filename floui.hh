@@ -450,6 +450,44 @@ Check &Check::action(std::function<void(Widget &)> &&f) {
 
 DEFINE_STYLES(Check)
 
+void *Slider_init() {
+    auto view = floui_new_view("com/google/android/material/slider/Slider");
+    return c::env->NewWeakGlobalRef(view);
+}
+
+Slider::Slider(void *b) : Widget(b) {}
+
+Slider::Slider() : Widget(Slider_init()) {}
+
+Slider &Slider::value(double val) {
+    auto v = (jobject)view;
+    auto setValue = c::env->GetMethodID(c::env->GetObjectClass(v), "setValue",
+                                          "(F)V");
+    c::env->CallVoidMethod(v, setValue, val);
+    return *this;
+}
+
+double Slider::value() {
+    auto v = (jobject)view;
+    auto getValue = c::env->GetMethodID(c::env->GetObjectClass(v), "getValue", "()F");
+    return c::env->CallFloatMethod(v, getValue);
+}
+
+Slider &Slider::foreground(uint32_t c) {
+    return *this;
+}
+
+Slider &Slider::action(std::function<void(Widget &)> &&f) {
+    auto v = (jobject)view;
+    auto setOnClickListener = c::env->GetMethodID(c::env->GetObjectClass(v), "setOnClickListener",
+                                                  "(Landroid/view/View$OnClickListener;)V");
+    c::env->CallVoidMethod(v, setOnClickListener, c::main_activity);
+    c::callbackmap[floui_get_id(v)] = new std::function<void(Widget &)>(f);
+    return *this;
+}
+
+DEFINE_STYLES(Slider)
+
 void *Text_init() {
     auto view = floui_new_view("android/widget/TextView");
     return c::env->NewWeakGlobalRef(view);
