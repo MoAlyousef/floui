@@ -78,6 +78,7 @@ class Widget {
   protected:
     static inline std::unordered_map<const char *, void *> widget_map{};
     void *view = nullptr;
+    void *data = nullptr;
 
   public:
     explicit Widget(void *v);
@@ -93,7 +94,6 @@ class Button : public Widget {
   public:
     explicit Button(void *b);
     explicit Button(const std::string &label);
-    Button &text(const std::string &label);
     Button &filled();
     Button &action(std::function<void(Widget &)> &&f);
 #ifdef __APPLE__
@@ -101,6 +101,21 @@ class Button : public Widget {
 #endif
     Button &foreground(uint32_t c);
     DECLARE_STYLES(Button)
+};
+
+class Toggle: public Widget {
+ public:
+    explicit Toggle(void *b);
+    explicit Toggle(const std::string &label);
+    Toggle &text(const std::string &label);
+    Toggle &value(bool val);
+    bool value();
+    Toggle &action(std::function<void(Widget &)> &&f);
+#ifdef __APPLE__
+    Toggle &action(::id target, SEL s);
+#endif
+    Toggle &foreground(uint32_t c);
+    DECLARE_STYLES(Toggle)
 };
 
 class Text : public Widget {
@@ -288,14 +303,6 @@ Button::Button(const std::string &label) : Widget(Button_init()) {
     c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
 }
 
-Button &Button::text(const std::string &label) {
-    auto v = (jobject)view;
-    auto setText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
-    c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
-    return *this;
-}
-
 Button &Button::foreground(uint32_t c) {
     auto v = (jobject)view;
     auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
@@ -315,6 +322,64 @@ Button &Button::action(std::function<void(Widget &)> &&f) {
 }
 
 DEFINE_STYLES(Button)
+
+void *Toggle_init() {
+    auto view = floui_new_view("android/widget/Switch");
+    auto setTransformationMethod =
+            c::env->GetMethodID(c::env->GetObjectClass(view), "setTransformationMethod",
+                                "(Landroid/text/method/TransformationMethod;)V");
+    c::env->CallVoidMethod(view, setTransformationMethod, nullptr);
+    return c::env->NewWeakGlobalRef(view);
+}
+
+Toggle::Toggle(void *b) : Widget(b) {}
+
+Toggle::Toggle(const std::string &label) : Widget(Toggle_init()) {
+    auto v = (jobject)view;
+    auto setText =
+            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+    c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
+}
+
+Toggle &Toggle::text(const std::string &label) {
+    auto v = (jobject)view;
+    auto setText =
+            c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
+    c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
+    return *this;
+}
+
+Toggle &Toggle::value(bool val) {
+    auto v = (jobject)view;
+    auto setChecked = c::env->GetMethodID(c::env->FindClass("android/widget/Switch"), "setChecked",
+                                          "(Z)V");
+    c::env->CallVoidMethod(v, setChecked, val);
+    return *this;
+}
+
+bool Toggle::value() {
+    auto v = (jobject)view;
+    auto isChecked = c::env->GetMethodID(c::env->GetObjectClass(v), "isChecked", "()Z");
+    return c::env->CallBooleanMethod(v, isChecked);
+}
+
+Toggle &Toggle::foreground(uint32_t c) {
+    auto v = (jobject)view;
+    auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
+    c::env->CallVoidMethod(v, setTextColor, argb2rgba(c));
+    return *this;
+}
+
+Toggle &Toggle::action(std::function<void(Widget &)> &&f) {
+    auto v = (jobject)view;
+    auto setOnClickListener = c::env->GetMethodID(c::env->GetObjectClass(v), "setOnClickListener",
+                                                  "(Landroid/view/View$OnClickListener;)V");
+    c::env->CallVoidMethod(v, setOnClickListener, c::main_activity);
+    c::callbackmap[floui_get_id(v)] = new std::function<void(Widget &)>(f);
+    return *this;
+}
+
+DEFINE_STYLES(Toggle)
 
 void *Text_init() {
     auto view = floui_new_view("android/widget/TextView");
@@ -633,6 +698,50 @@ Button &Button::foreground(uint32_t c) {
 }
 
 DEFINE_STYLES(Button)
+
+Toggle::Toggle(void *b) : Widget(b) {}
+
+Toggle::Toggle(const std::string &label)
+    : Widget((void *)CFBridgingRetain([UIButton buttonWithType:UIButtonTypeCustom])) {
+    auto v = (__bridge UISwitch *)view;
+    [v setTitle:[NSString stringWithUTF8String:label.c_str()] forState:UIControlStateNormal];
+    [v setTitleColor:UIColor.blueColor forState:UIControlStateNormal];
+}
+
+Toggle &Toggle::value(bool val) {
+    auto v = (__bridge UISwitch *)view;
+    [v setOn:val animated:YES];
+    return *this;
+}
+
+bool Toggle::value() {
+    auto v = (__bridge UISwitch *)view;
+    return v.on;
+}
+
+Toggle &Toggle::action(std::function<void(Widget &)> &&f) {
+    auto v = (__bridge UISwitch *)view;
+    auto &callbacks = FlouiViewControllerImpl::callbacks;
+    callbacks.push_back([[Callback alloc] initWithTarget:view Cb:f]);
+    [v addTarget:callbacks.back()
+                  action:@selector(invoke)
+        forControlEvents:UIControlEventTouchUpInside];
+    return *this;
+}
+
+Toggle &Toggle::action(::id target, SEL s) {
+    auto v = (__bridge UISwitch *)view;
+    [v addTarget:target action:s forControlEvents:UIControlEventTouchUpInside];
+    return *this;
+}
+
+Toggle &Toggle::foreground(uint32_t c) {
+    auto v = (__bridge UISwitch *)view;
+    [v setTitleColor:col2uicol(c) forState:UIControlStateNormal];
+    return *this;
+}
+
+DEFINE_STYLES(Toggle)
 
 Text::Text(void *b) : Widget(b) {}
 
