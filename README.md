@@ -28,17 +28,7 @@ int val {0};
     FlouiViewController controller((void *)CFBridgingRetain(self));
     
     auto v = MainView(controller, {
-        Text("Counter")
-            .size(600, 100)
-            .center()
-            .foreground(Color::White)
-            .fontsize(30)
-            .bold()
-            .background(Color::Magenta),
-        Spacer().size(0, 50),
-        VStack({
             Button("Increment")
-                .size(0, 40)
                 .filled()
                 .background(Color::rgb(0, 0, 255))
                 .foreground(Color::rgb(255, 255, 255, 255))
@@ -48,15 +38,12 @@ int val {0};
                 }),
             Text("0").id("mytext").size(0, 50),
             Button("Decrement").foreground(0xffffffff)
-                    .size(0, 40)
                     .filled()
                     .background(0x0000ffff)
                     .action([=](Widget&) {
                         val--;
                         [self updateText];
                     }),
-        }),
-        Spacer()
     });
 }
 
@@ -119,35 +106,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 static int val = 0;
 
-extern "C" JNIEXPORT jobject JNICALL
-Java_com_example_myapplication_MainActivity_mainView(
-        JNIEnv* env,
-        jobject main_activity, jobject view) {
-
-    FlouiViewController controller(env, main_activity, view);
-
+MainView myview(const FlouiViewController &fvc) {
     auto main_view = MainView(controller, {
-        Button("Increment").action([=](Widget&) {
-            val++;
-            Widget::from_id<Text>("val").text(std::to_string(val));
-        }),
-        Text("0").center().bold().fontsize(20).foreground(Color::Black).id("val"),
-        Button("Decrement").action([=](Widget&) {
-            val--;
-            Widget::from_id<Text>("val").text(std::to_string(val));
-        })
+            Button("Increment")
+                .action([=](Widget&) {
+                    val++;
+                    Widget::from_id<Text>("val").text(std::to_string(val));
+                }),
+            Text("0")
+                .center()
+                .bold()
+                .fontsize(20)
+                .foreground(Color::Black)
+                .id("val"),
+            Button("Decrement")
+                .action([=](Widget&) {
+                    val--;
+                    Widget::from_id<Text>("val").text(std::to_string(val));
+                })
     });
-    return (jobject) main_view.inner();
+    return main_view;
 }
-extern "C"
-JNIEXPORT void JNICALL
+
+extern "C" JNIEXPORT jobject JNICALL
+Java_com_example_myapplication_MainActivity_mainView(JNIEnv* env, jobject main_activity, jobject view) {
+    FlouiViewController controller(env, main_activity, view);
+    return (jobject) myview(controller).inner();
+}
+
+extern "C" JNIEXPORT void JNICALL
 Java_com_example_myapplication_MainActivity_handleEvent(JNIEnv *env, jobject thiz, jobject view) {
     FlouiViewController::handle_events(view);
 }
-extern "C"
-JNIEXPORT jobject JNICALL
-Java_com_example_myapplication_MainActivity_findNativeViewById(JNIEnv *env, jobject thiz,
-                                                               jstring id) {
+
+extern "C" JNIEXPORT jobject JNICALL
+Java_com_example_myapplication_MainActivity_findNativeViewById(JNIEnv *env, jobject thiz, jstring id) {
     return (jobject)Widget::from_id<Widget>(reinterpret_cast<const char *>(id)).inner();
 }
 ```
