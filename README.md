@@ -36,14 +36,17 @@ int val {0};
                     val++;
                     [self updateText];
                 }),
-            Text("0").id("mytext").size(0, 50),
-            Button("Decrement").foreground(0xffffffff)
-                    .filled()
-                    .background(0x0000ffff)
-                    .action([=](Widget&) {
-                        val--;
-                        [self updateText];
-                    }),
+            Text("0")
+                .id("mytext")
+                .size(0, 50),
+            Button("Decrement")
+                .foreground(0xffffffff)
+                .filled()
+                .background(0x0000ffff)
+                .action([=](Widget&) {
+                    val--;
+                    [self updateText];
+                }),
     });
 }
 
