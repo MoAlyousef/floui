@@ -175,9 +175,8 @@ DEFINE_STYLES(Spacer)
 
 MainView::MainView(void *v) : Widget(v) {}
 
-MainView::MainView(FlouiViewController *fvc, std::initializer_list<Widget> l)
+MainView::MainView(const FlouiViewController &, std::initializer_list<Widget> l)
     : Widget((void *)CFBridgingRetain([NSStackView new])) {
-    assert(fvc);
     auto vc = FlouiViewControllerImpl::vc;
     auto v = (__bridge NSStackView *)view;
     [vc.view addSubview:v];

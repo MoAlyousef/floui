@@ -179,7 +179,7 @@ class Spacer : public Widget {
 class MainView : public Widget {
   public:
     explicit MainView(void *m);
-    MainView(FlouiViewController *vc, std::initializer_list<Widget> l);
+    MainView(const FlouiViewController &vc, std::initializer_list<Widget> l);
     MainView &spacing(int val);
     DECLARE_STYLES(MainView)
 };
@@ -609,7 +609,7 @@ void *VStack_init() {
 
 MainView::MainView(void *m) : Widget(m) {}
 
-MainView::MainView(FlouiViewController *vc, std::initializer_list<Widget> l)
+MainView::MainView(const FlouiViewController &, std::initializer_list<Widget> l)
     : Widget(VStack_init()) {
     auto v = (jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
@@ -1026,7 +1026,7 @@ DEFINE_STYLES(Spacer)
 
 MainView::MainView(void *v) : Widget(v) {}
 
-MainView::MainView(FlouiViewController *fvc, std::initializer_list<Widget> l)
+MainView::MainView(const FlouiViewController &, std::initializer_list<Widget> l)
     : Widget((void *)CFBridgingRetain([UIStackView new])) {
     auto v = (__bridge UIStackView *)view;
     v.translatesAutoresizingMaskIntoConstraints = NO;
