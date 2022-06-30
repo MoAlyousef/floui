@@ -78,7 +78,6 @@ class Widget {
   protected:
     static inline std::unordered_map<const char *, void *> widget_map{};
     void *view = nullptr;
-    void *data = nullptr;
 
   public:
     explicit Widget(void *v);
