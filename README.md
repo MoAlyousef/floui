@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 static int val = 0;
 
 MainView myview(const FlouiViewController &fvc) {
-    auto main_view = MainView(controller, {
+    auto main_view = MainView(fvc, {
             Button("Increment")
                 .action([=](Widget&) {
                     val++;
