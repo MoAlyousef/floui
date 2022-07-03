@@ -21,7 +21,7 @@ MainView myview(const FlouiViewController &fvc) {
                 .foreground(Color::rgb(255, 255, 255, 255))
                 .action([=](Widget&) {
                     val++;
-                    [self updateText];
+                    Widget::from_id<Text>("mytext").text(std::to_string(val));
                 }),
             Text("0")
                 .id("mytext")
@@ -32,7 +32,7 @@ MainView myview(const FlouiViewController &fvc) {
                 .background(0x0000ffff)
                 .action([=](Widget&) {
                     val--;
-                    [self updateText];
+                    Widget::from_id<Text>("mytext").text(std::to_string(val));
                 }),
     });
     return main_view;
@@ -53,7 +53,7 @@ MainView myview(const FlouiViewController &fvc) {
 ```
 Add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
 
-![image](https://user-images.githubusercontent.com/37966791/173707028-a6e076c2-4170-459e-88a7-bd555ecfd1fa.png)
+![image](https://user-images.githubusercontent.com/37966791/177045481-201189b8-8f2b-4004-9b32-556cee3fce1a.png)
 
 ### Android
 Assuming your application is called "My Application" (the default for Android Studio):
@@ -185,6 +185,7 @@ Maybe std::any can be used in the library and such casts can pass thru std::any_
 - Adding images has to be in the project's resource file. 
     - In Android Studio: Resource Manager, Import Drawables. This will add the file to res/drawable. The file can be accessed directly ImageView("MyImage.jpg").
     - In XCode: You can simple drag images into Assets.xcassets, then the image can be accessed directly ImageView("MyImage.jpg").
+- Widgets are not thread-safe.
 
 ## Todo
 - Wrap more UIKit and Android controls and their methods.

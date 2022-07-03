@@ -12,7 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build macOS
-      run: clang++ -std=c++17 test/main.mm test/impl.mm -framework Cocoa -fobjc-arc -Wno-objc-method-access -lobjc
+      run: clang++ -std=c++17 test/main.mm test/osx_impl.mm -framework Cocoa -fobjc-arc -Wno-objc-method-access -lobjc
     - name: Build ios
       run: clang++ -std=c++17 -arch arm64 -isysroot $(xcrun --sdk iphoneos --show-sdk-path) test/main.mm -fobjc-arc -lobjc -framework UIKit
 
