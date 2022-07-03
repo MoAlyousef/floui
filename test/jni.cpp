@@ -4,7 +4,7 @@
 #include <string>
 #define __ANDROID__
 #define FLOUI_IMPL
-#include "../floui.hh"
+#include "../floui.hpp"
 
 static int val = 0;
 

@@ -22,8 +22,8 @@
  SOFTWARE.
  */
 
-#ifndef __FLOUI_H__
-#define __FLOUI_H__
+#ifndef __FLOUI_HPP__
+#define __FLOUI_HPP__
 
 #include <cstdint>
 #include <functional>
@@ -475,9 +475,10 @@ Slider &Slider::foreground(uint32_t c) { return *this; }
 
 Slider &Slider::action(std::function<void(Widget &)> &&f) {
     auto v = (jobject)view;
-    auto setOnClickListener = c::env->GetMethodID(c::env->GetObjectClass(v), "setOnClickListener",
-                                                  "(Landroid/view/View$OnClickListener;)V");
-    c::env->CallVoidMethod(v, setOnClickListener, c::main_activity);
+    auto addOnChangeListener = c::env->GetMethodID(
+        c::env->FindClass("com/google/android/material/slider/Slider"), "addOnChangeListener",
+        "(Lcom/google/android/material/slider/BaseOnChangeListener;)V");
+    c::env->CallVoidMethod(v, addOnChangeListener, c::main_activity);
     c::callbackmap[floui_get_id(v)] = new std::function<void(Widget &)>(f);
     return *this;
 }
@@ -1134,4 +1135,4 @@ DEFINE_STYLES(HStack)
 
 #endif // FLOUI_IMPL
 
-#endif // __FLOUI_H__
+#endif // __FLOUI_HPP__

@@ -11,23 +11,10 @@ You can downoload the floui.hpp header and add it to your xcode project. Remembe
 #define FLOUI_IMPL
 #include "floui.hh"
 
-@interface ViewController ()
+static int val = 0;
 
-@end
-
-@implementation ViewController
-int val {0};
-
--(void)updateText {
-    Widget::from_id<Text>("mytext").text(std::to_string(val));
-}
-
-- (void)viewDidLoad {
-    [super viewDidLoad];
-
-    FlouiViewController controller((void *)CFBridgingRetain(self));
-    
-    auto v = MainView(controller, {
+MainView myview(const FlouiViewController &fvc) {
+    auto main_view = MainView(fvc, {
             Button("Increment")
                 .filled()
                 .background(Color::rgb(0, 0, 255))
@@ -48,6 +35,18 @@ int val {0};
                     [self updateText];
                 }),
     });
+    return main_view;
+}
+
+@interface ViewController ()
+
+@end
+
+@implementation ViewController
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    FlouiViewController controller((void *)CFBridgingRetain(self));
+    myview(controller);
 }
 
 @end
@@ -67,15 +66,17 @@ Assuming your application is called myapplication:
 ```java
 package com.example.myapplication;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+import com.example.myapplication.databinding.ActivityMainBinding;
+import com.google.android.material.slider.Slider;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, Slider.OnChangeListener {
     static {
         System.loadLibrary("myapplication");
     }
@@ -96,6 +97,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View view) {
         handleEvent(view);
+    }
+
+    @Override
+    public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
+        handleEvent(slider);
     }
 }
 ```
@@ -126,6 +132,11 @@ MainView myview(const FlouiViewController &fvc) {
                 .action([=](Widget&) {
                     val--;
                     Widget::from_id<Text>("val").text(std::to_string(val));
+                }),
+            Slider()
+                .action([](Widget &w) {
+                    auto slider_value = Slider(w.inner()).value();
+                    floui_log(slider_value);
                 })
     });
     return main_view;

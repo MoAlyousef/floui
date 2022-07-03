@@ -26,7 +26,7 @@
 }
 @end
 #endif
-#include "../floui.hh"
+#include "../floui.hpp"
 
 @interface AppDelegate :
 #if TARGET_OS_OSX
