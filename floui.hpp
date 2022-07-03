@@ -1071,8 +1071,8 @@ MainView::MainView(const FlouiViewController &, std::initializer_list<Widget> l)
     } else {
         [label setText:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"]];
     }
-    [label setTextColor:UIColor.whiteColor];
-    label.backgroundColor = UIColor.systemBlueColor;
+    [label setTextColor:UIColor.blackColor];
+    label.backgroundColor = UIColor.systemGray5Color;
     [label setFont:[UIFont boldSystemFontOfSize:30]];
     [label setTextAlignment:NSTextAlignmentCenter];
     label.frame = CGRectMake(0, 0, vc.view.frame.size.width, 120);
@@ -1162,7 +1162,8 @@ DEFINE_STYLES(HStack)
 
 ImageView::ImageView(void *v) : Widget(v) {}
 
-ImageView::ImageView(const std::string &path) : Widget((void *)CFBridgingRetain([UIImageView new])) {
+ImageView::ImageView(const std::string &path)
+    : Widget((void *)CFBridgingRetain([UIImageView new])) {
     auto i = [UIImage imageNamed:[NSString stringWithUTF8String:path.c_str()]];
     auto v = (__bridge UIImageView *)view;
     [v setImage:i];
