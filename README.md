@@ -118,6 +118,7 @@ static int val = 0;
 MainView myview(const FlouiViewController &fvc) {
     auto main_view = MainView(fvc, {
             Button("Increment")
+                .foreground(Color::Blue)
                 .action([=](Widget&) {
                     val++;
                     Widget::from_id<Text>("val").text(std::to_string(val));
@@ -129,15 +130,11 @@ MainView myview(const FlouiViewController &fvc) {
                 .foreground(Color::Black)
                 .id("val"),
             Button("Decrement")
+                .foreground(Color::Red)
                 .action([=](Widget&) {
                     val--;
                     Widget::from_id<Text>("val").text(std::to_string(val));
                 }),
-            Slider()
-                .action([](Widget &w) {
-                    auto slider_value = Slider(w.inner()).value();
-                    floui_log(std::to_string(slider_value)); // to print the values
-                })
     });
     return main_view;
 }
@@ -160,7 +157,7 @@ Java_com_example_myapplication_MainActivity_findNativeViewById(JNIEnv *env, jobj
 ```
 Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
 
-![image](https://user-images.githubusercontent.com/37966791/175548084-a0105440-dc32-4f09-be82-0029312efe7c.png)
+![image](https://user-images.githubusercontent.com/37966791/177045718-3fcd3c5c-d77a-4090-bc11-99a6900e2f8f.png)
 
 ## Currently available controls:
 - Text
@@ -178,8 +175,9 @@ Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source 
 - Sliders on Android take the full width of the LinearLayout, so this must be taken into consideration if code is shared also with iOS.
 - Users of this library should ensure correct type usage when acquiring the type from Widget:
 ```cpp
-auto button1 = Widget::from_id<Button>("some_id");
-auto button2 = Button(some_widget.inner());
+auto button = Widget::from_id<Button>("some_id");
+// or
+auto slider = Slider(w.inner());
 ```
 Maybe std::any can be used in the library and such casts can pass thru std::any_cast, the problem on Android is that everything is a jobject, and equality can only be checked via JNIenv::IsSameObject, also RTTI is disabled by default on ndk-build. 
 - Adding images has to be in the project's resource file. 
