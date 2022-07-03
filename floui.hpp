@@ -202,7 +202,9 @@ class HStack : public Widget {
 class ImageView : public Widget {
   public:
     explicit ImageView(void *v);
+    ImageView();
     explicit ImageView(const std::string &path);
+    ImageView &image(const std::string &path);
     DECLARE_STYLES(ImageView)
 };
 
@@ -695,9 +697,36 @@ void *ImageView_init(const std::string &path) {
     return c::env->NewWeakGlobalRef(view);
 }
 
+void *ImageView_init() {
+    auto view = floui_new_view("android/widget/ImageView");
+    return c::env->NewWeakGlobalRef(view);
+}
+
 ImageView::ImageView(void *v) : Widget(v) {}
 
+ImageView::ImageView() : Widget(ImageView_init()) {}
+
 ImageView::ImageView(const std::string &path) : Widget(ImageView_init(path)) {}
+
+ImageView &ImageView::image(const std::string &path) {
+    auto v = (jobject)view;
+    auto getResources = c::env->GetMethodID(c::env->GetObjectClass(c::main_activity),
+                                            "getResources", "()Landroid/content/res/Resources;");
+    auto resources = c::env->CallObjectMethod(c::main_activity, getResources);
+    auto getPackageName = c::env->GetMethodID(c::env->GetObjectClass(c::main_activity),
+                                              "getPackageName", "()Ljava/lang/String;");
+    auto packageName = c::env->CallObjectMethod(c::main_activity, getPackageName);
+    auto getIdentifier =
+        c::env->GetMethodID(c::env->GetObjectClass(resources), "getIdentifier",
+                            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
+    auto resId = c::env->CallIntMethod(resources, getIdentifier,
+                                       c::env->NewStringUTF(path.substr(0, path.find('.')).c_str()),
+                                       c::env->NewStringUTF("drawable"), packageName);
+    auto setImageResource = c::env->GetMethodID(c::env->FindClass("android/widget/ImageView"),
+                                                "setImageResource", "(I)V");
+    c::env->CallVoidMethod(v, setImageResource, resId);
+    return *this;
+}
 
 DEFINE_STYLES(ImageView)
 
@@ -1161,12 +1190,21 @@ DEFINE_STYLES(HStack)
 
 ImageView::ImageView(void *v) : Widget(v) {}
 
+ImageView::ImageView() : Widget((void *)CFBridgingRetain([UIImageView new])) {}
+
 ImageView::ImageView(const std::string &path)
     : Widget((void *)CFBridgingRetain([UIImageView new])) {
     auto i = [UIImage imageNamed:[NSString stringWithUTF8String:path.c_str()]];
     auto v = (__bridge UIImageView *)view;
     [v setImage:i];
     [v setContentMode:UIViewContentModeScaleAspectFit];
+}
+
+ImageView &ImageView::image(const std::string &path) {
+    auto v = (__bridge UIImageView *)view;
+    auto i = [UIImage imageNamed:[NSString stringWithUTF8String:path.c_str()]];
+    [v setImage:i];
+    return *this;
 }
 
 DEFINE_STYLES(ImageView)
