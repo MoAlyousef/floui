@@ -105,8 +105,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 }
 ```
+To replace the main application text on the top, you can do so by changing the app_name value in res/values/strings.xml.
 
 3- In your cpp source file, replace with this boilerplate:
+(Normally Android Studio will prompt you to implement the missing native methods (mainView, handleEvent and findNativeViewById) so much of it should be automatic)
+
 ```cpp
 #include <jni.h>
 #include <string>
@@ -136,7 +139,7 @@ MainView myview(const FlouiViewController &fvc) {
             Slider()
                 .action([](Widget &w) {
                     auto slider_value = Slider(w.inner()).value();
-                    floui_log(slider_value);
+                    floui_log(std::to_string(slider_value)); // to print the values
                 })
     });
     return main_view;
@@ -171,6 +174,16 @@ Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source 
 - Spacer
 - Toggle/Check
 - Slider
+
+## Current limitations:
+- Use of const std::string& for text values, std::string_view might not be null-terminated. Converting NSString from a c-string requires strings to be null-terminated.
+- Sliders on Android take the full width of the layout, so this must be taken into consideration if code is shared also with iOS.
+- Users of this library should ensure correct type usage when acquiring the type from Widget:
+```cpp
+auto button1 = Widget::from_id<Button>("some_id");
+auto button2 = Button(some_widget.inner());
+```
+Maybe std::any can be used in the library and such casts can pass thru std::any_cast, the problem on Android is that everything is a jobject, and equality can only be checked via JNIenv::IsSameObject.
 
 ## Todo
 - Wrap more UIKit and Android controls and their methods.
