@@ -16,20 +16,14 @@ static int val = 0;
 MainView myview(const FlouiViewController &fvc) {
     auto main_view = MainView(fvc, {
             Button("Increment")
-                .filled()
-                .background(Color::rgb(0, 0, 255))
-                .foreground(Color::rgb(255, 255, 255, 255))
                 .action([=](Widget&) {
                     val++;
                     Widget::from_id<Text>("mytext").text(std::to_string(val));
                 }),
             Text("0")
-                .id("mytext")
-                .size(0, 50),
+                .id("mytext"),
             Button("Decrement")
-                .foreground(0xffffffff)
-                .filled()
-                .background(0x0000ffff)
+                .foreground(Color::Red)
                 .action([=](Widget&) {
                     val--;
                     Widget::from_id<Text>("mytext").text(std::to_string(val));
@@ -53,7 +47,7 @@ MainView myview(const FlouiViewController &fvc) {
 ```
 Add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
 
-![image](https://user-images.githubusercontent.com/37966791/177045481-201189b8-8f2b-4004-9b32-556cee3fce1a.png)
+![image](https://user-images.githubusercontent.com/37966791/177056673-9bb65662-4313-438e-9c44-b621f37bb382.png)
 
 ### Android
 Assuming your application is called "My Application" (the default for Android Studio):
