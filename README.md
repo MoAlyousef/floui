@@ -171,7 +171,7 @@ Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source 
 - ImageView
 
 ## Current limitations:
-- Use of const std::string& for text values, std::string_view might not be null-terminated. Converting NSString from a c-string requires strings to be null-terminated.
+- Use of const std::string& for text values, std::string_view might not be null-terminated. Converting NSString or jstring from a c string requires strings to be null-terminated.
 - Sliders on Android take the full width of the LinearLayout, so this must be taken into consideration if code is shared also with iOS.
 - Users of this library should ensure correct type usage when acquiring the type from Widget:
 ```cpp
