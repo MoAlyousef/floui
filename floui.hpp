@@ -302,13 +302,12 @@ static constexpr uint32_t argb2rgba(uint32_t argb) { return (argb << 24) | (argb
     }                                                                                              \
     widget &widget::size(int w, int h) {                                                           \
         auto v = (jobject)view;                                                                    \
-        auto setWidth = c::env->GetMethodID(c::env->GetObjectClass(v), "setMinimumWidth", "(I)V"); \
-        auto setHeight =                                                                           \
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setMinimumHeight", "(I)V");            \
-        if (w != 0)                                                                                \
-            c::env->CallVoidMethod(v, setWidth, w);                                                \
-        if (h != 0)                                                                                \
-            c::env->CallVoidMethod(v, setHeight, h);                                               \
+        auto layoutc = c::env->FindClass("android/widget/LinearLayout$LayoutParams");              \
+        auto init = c::env->GetMethodID(layoutc, "<init>", "(II)V");                               \
+        auto obj = c::env->NewObject(layoutc, init, w, h);                                         \
+        auto setLayoutParams = c::env->GetMethodID(c::env->GetObjectClass(v), "setLayoutParams",   \
+                                                   "(Landroid/view/ViewGroup$LayoutParams;)V");    \
+        c::env->CallVoidMethod(v, setLayoutParams, obj);                                           \
         return *this;                                                                              \
     }
 
