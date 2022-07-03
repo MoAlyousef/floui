@@ -199,6 +199,13 @@ class HStack : public Widget {
     DECLARE_STYLES(HStack)
 };
 
+class ImageView : public Widget {
+  public:
+    explicit ImageView(void *v);
+    explicit ImageView(const std::string &path);
+    DECLARE_STYLES(ImageView)
+};
+
 #ifdef FLOUI_IMPL
 
 Color::Color(uint32_t col) : c(col) {}
@@ -669,6 +676,32 @@ HStack &HStack::spacing(int space) { return *this; }
 
 DEFINE_STYLES(HStack)
 
+void *ImageView_init(const std::string &path) {
+    auto getResources = c::env->GetMethodID(c::env->GetObjectClass(c::main_activity),
+                                            "getResources", "()Landroid/content/res/Resources;");
+    auto resources = c::env->CallObjectMethod(c::main_activity, getResources);
+    auto getPackageName = c::env->GetMethodID(c::env->GetObjectClass(c::main_activity),
+                                              "getPackageName", "()Ljava/lang/String;");
+    auto packageName = c::env->CallObjectMethod(c::main_activity, getPackageName);
+    auto getIdentifier =
+        c::env->GetMethodID(c::env->GetObjectClass(resources), "getIdentifier",
+                            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
+    auto resId = c::env->CallIntMethod(resources, getIdentifier,
+                                       c::env->NewStringUTF(path.substr(0, path.find('.')).c_str()),
+                                       c::env->NewStringUTF("drawable"), packageName);
+    auto view = floui_new_view("android/widget/ImageView");
+    auto setImageResource = c::env->GetMethodID(c::env->FindClass("android/widget/ImageView"),
+                                                "setImageResource", "(I)V");
+    c::env->CallVoidMethod(view, setImageResource, resId);
+    return c::env->NewWeakGlobalRef(view);
+}
+
+ImageView::ImageView(void *v) : Widget(v) {}
+
+ImageView::ImageView(const std::string &path) : Widget(ImageView_init(path)) {}
+
+DEFINE_STYLES(ImageView)
+
 #elif defined(__APPLE__)
 
 #import <Foundation/Foundation.h>
@@ -1126,6 +1159,17 @@ HStack &HStack::spacing(int val) {
 }
 
 DEFINE_STYLES(HStack)
+
+ImageView::ImageView(void *v) : Widget(v) {}
+
+ImageView::ImageView(const std::string &path) : Widget((void *)CFBridgingRetain([UIImageView new])) {
+    auto i = [UIImage imageNamed:[NSString stringWithUTF8String:path.c_str()]];
+    auto v = (__bridge UIImageView *)view;
+    [v setImage:i];
+    [v setContentMode:UIViewContentModeScaleAspectFit];
+}
+
+DEFINE_STYLES(ImageView)
 
 #endif // TARGET_OS_IPHONE
 

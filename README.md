@@ -56,7 +56,7 @@ Add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
 ![image](https://user-images.githubusercontent.com/37966791/173707028-a6e076c2-4170-459e-88a7-bd555ecfd1fa.png)
 
 ### Android
-Assuming your application is called myapplication:
+Assuming your application is called "My Application" (the default for Android Studio):
 
 1- Create a native C++ application in Android studio, check the C++ toolchain to be C++17 (in the last step of creating a project).
 
@@ -73,15 +73,12 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import android.os.Bundle;
 import android.view.View;
 
-import com.example.myapplication.databinding.ActivityMainBinding;
 import com.google.android.material.slider.Slider;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, Slider.OnChangeListener {
     static {
         System.loadLibrary("myapplication");
     }
-
-    private ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -174,6 +171,7 @@ Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source 
 - Spacer
 - Toggle/Check
 - Slider
+- ImageView
 
 ## Current limitations:
 - Use of const std::string& for text values, std::string_view might not be null-terminated. Converting NSString from a c-string requires strings to be null-terminated.
@@ -184,6 +182,9 @@ auto button1 = Widget::from_id<Button>("some_id");
 auto button2 = Button(some_widget.inner());
 ```
 Maybe std::any can be used in the library and such casts can pass thru std::any_cast, the problem on Android is that everything is a jobject, and equality can only be checked via JNIenv::IsSameObject, also RTTI is disabled by default on ndk-build. 
+- Adding images has to be in the project's resource file. 
+    - In Android Studio: Resource Manager, Import Drawables. This will add the file to res/drawable. The file can be accessed directly ImageView("MyImage.jpg").
+    - In XCode: You can simple drag images into Assets.xcassets, then the image can be accessed directly ImageView("MyImage.jpg").
 
 ## Todo
 - Wrap more UIKit and Android controls and their methods.
