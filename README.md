@@ -9,7 +9,7 @@ You can downoload the floui.hpp header and add it to your xcode project. Remembe
 // ViewController.mm
 #import "ViewController.h"
 #define FLOUI_IMPL
-#include "floui.hh"
+#include "floui.hpp"
 
 static int val = 0;
 
@@ -60,7 +60,7 @@ Assuming your application is called myapplication:
 
 1- Create a native C++ application in Android studio, check the C++ toolchain to be C++17 (in the last step of creating a project).
 
-2- Add the floui.hh header to the same dir as your cpp source.
+2- Add the floui.hpp header to the same dir as your cpp source.
 
 2- Replace MainActivity.java with:
 ```java
@@ -114,7 +114,7 @@ To replace the main application text on the top, you can do so by changing the a
 #include <jni.h>
 #include <string>
 #define FLOUI_IMPL
-#include "floui.hh"
+#include "floui.hpp"
 
 static int val = 0;
 
@@ -177,14 +177,13 @@ Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source 
 
 ## Current limitations:
 - Use of const std::string& for text values, std::string_view might not be null-terminated. Converting NSString from a c-string requires strings to be null-terminated.
-- Sliders on Android take the full width of the layout, so this must be taken into consideration if code is shared also with iOS.
+- Sliders on Android take the full width of the LinearLayout, so this must be taken into consideration if code is shared also with iOS.
 - Users of this library should ensure correct type usage when acquiring the type from Widget:
 ```cpp
 auto button1 = Widget::from_id<Button>("some_id");
 auto button2 = Button(some_widget.inner());
 ```
-Maybe std::any can be used in the library and such casts can pass thru std::any_cast, the problem on Android is that everything is a jobject, and equality can only be checked via JNIenv::IsSameObject.
+Maybe std::any can be used in the library and such casts can pass thru std::any_cast, the problem on Android is that everything is a jobject, and equality can only be checked via JNIenv::IsSameObject, also RTTI is disabled by default on ndk-build. 
 
 ## Todo
 - Wrap more UIKit and Android controls and their methods.
-- Use proper layout constraints for the mainview to handle orientation changes. 
