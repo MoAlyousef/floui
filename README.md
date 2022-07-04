@@ -11,6 +11,8 @@ You can downoload the floui.hpp header and add it to your xcode project. Remembe
 #define FLOUI_IMPL
 #include "floui.hpp"
 
+using namespace floui;
+
 static int val = 0;
 
 MainView myview(const FlouiViewController &fvc) {
@@ -107,6 +109,8 @@ To replace the main application text on the top, you can do so by changing the a
 #define FLOUI_IMPL
 #include "floui.hpp"
 
+using namespace floui;
+
 static int val = 0;
 
 MainView myview(const FlouiViewController &fvc) {
@@ -176,8 +180,9 @@ auto slider = Slider(w.inner());
 Maybe std::any can be used in the library and such casts can pass thru std::any_cast, the problem on Android is that everything is a jobject, and equality can only be checked via JNIenv::IsSameObject, also RTTI is disabled by default on ndk-build. 
 - Adding images has to be in the project's resource file. 
     - In Android Studio: Resource Manager, Import Drawables. This will add the file to res/drawable. The file can be accessed directly ImageView("MyImage.jpg").
-    - In XCode: You can simple drag images into Assets.xcassets, then the image can be accessed directly ImageView("MyImage.jpg").
+    - In XCode: You can simply drag images into Assets.xcassets, then the image can be accessed directly ImageView("MyImage.jpg").
 - Widgets are not thread-safe.
 
 ## Todo
 - Wrap more UIKit and Android controls and their methods.
+- Code refactoring.

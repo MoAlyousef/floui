@@ -3,6 +3,8 @@
 #define FLOUI_IMPL
 #include "../floui.hpp"
 
+using namespace floui;
+
 #import <Cocoa/Cocoa.h>
 
 struct FlouiViewControllerImpl {

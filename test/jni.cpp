@@ -6,6 +6,8 @@
 #define FLOUI_IMPL
 #include "../floui.hpp"
 
+using namespace floui;
+
 static int val = 0;
 
 extern "C" JNIEXPORT jobject JNICALL

@@ -28,6 +28,8 @@
 #endif
 #include "../floui.hpp"
 
+using namespace floui;
+
 @interface AppDelegate :
 #if TARGET_OS_OSX
     NSObject <NSApplicationDelegate>
