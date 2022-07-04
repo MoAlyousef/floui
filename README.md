@@ -1,5 +1,32 @@
 # floui
-floui, pronounced "flowy", is a single header C++17 lib inspired by SwiftUI, which wraps native iOS and Android controls/widgets, and integrates into the de facto build environments of each platform (XCode and Android Studio).
+floui, pronounced "flowy", is a proof-of-concept single header C++17 lib inspired by SwiftUI, which wraps native iOS and Android controls/widgets, and integrates into the de facto build environments of each platform (XCode and Android Studio).
+
+![image](https://user-images.githubusercontent.com/37966791/177225333-50fc1431-3a02-49df-8b87-98ca0245c9bc.png)
+
+## Currently available controls:
+- Text
+- TextField
+- Button
+- VStack (Vertical UIStackView on iOS and LinearLayout on Android)
+- HStack (Horizontal UIStackView on iOS and LinearLayout on Android)
+- Spacer
+- Toggle/Check
+- Slider
+- ImageView
+
+## Why
+- A single language for iOS and Android development using native controls.
+- C++ is already supported, so why not use it to instantiate native controls.
+- Adds little overhead compared to managed languages targetting iOS and Android.
+- Ability to use C/C++ (and in case of iOS, Objective-C/C++) within your codebase.
+- Builds with your codebase, no toolchain/build system manipulation required.
+
+## Why not
+- Currently most controls aren't wrapped.
+- Trying to do anything more involved, you'd have to use the native language of the platform. In Android's case, jni programming is a circle of hell of its own. You can however access the natively created views from Java.
+- WatchOS is not wrapped, since it doesn't use UIKit.
+- If you're only targetting apple platforms, SwiftUI is more pleasant to write and can target all apple platforms, include WatchOS and OSX.
+- Too early for complex guis.
 
 ## Usage
 
@@ -48,8 +75,6 @@ MainView myview(const FlouiViewController &fvc) {
 @end
 ```
 Add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
-
-![image](https://user-images.githubusercontent.com/37966791/177056673-9bb65662-4313-438e-9c44-b621f37bb382.png)
 
 ### Android
 Assuming your application is called "My Application" (the default for Android Studio):
@@ -154,19 +179,6 @@ Java_com_example_myapplication_MainActivity_findNativeViewById(JNIEnv *env, jobj
 }
 ```
 Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
-
-![image](https://user-images.githubusercontent.com/37966791/177045718-3fcd3c5c-d77a-4090-bc11-99a6900e2f8f.png)
-
-## Currently available controls:
-- Text
-- TextField
-- Button
-- VStack (Vertical UIStackView on iOS and LinearLayout on Android)
-- HStack (Horizontal UIStackView on iOS and LinearLayout on Android)
-- Spacer
-- Toggle/Check
-- Slider
-- ImageView
 
 ## Current limitations:
 - Use of const std::string& for text values, std::string_view might not be null-terminated. Converting NSString or jstring from a c string requires strings to be null-terminated.
