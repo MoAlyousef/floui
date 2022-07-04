@@ -109,7 +109,6 @@ namespace floui {
         /// Makes the button filled on iOS
         Button &filled();
         /// Sets the callback of the button
-        /// Sets the callback of the button
         Button &action(std::function<void(Widget &)> &&f);
 #ifdef __OBJC__
         Button &action(::id target, SEL s);
