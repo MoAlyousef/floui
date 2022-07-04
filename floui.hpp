@@ -34,17 +34,24 @@
 
 struct FlouiViewControllerImpl;
 
-/// Log to console
-void floui_log(const std::string &s);
+/// Log to console, this is platform specific and needs to be implemented for each platform
+void floui_log0(const char *s);
+
+/// log to console, mainly to avoid triggering -Wformat-nonliteral
+int floui_log(const char *s) {
+    floui_log0(s);
+    return 0;
+}
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
+/// log to console
 template <typename... Args>
 int floui_log(const char *fmt, Args... args) {
     auto sz = snprintf(0, 0, fmt, args...);
     auto buf = new char[sz + 1];
     auto ret = snprintf(buf, sz + 1, fmt, args...);
-    floui_log(std::string(buf, sz + 1));
+    floui_log0(buf);
     delete[] buf;
     return ret;
 }
@@ -359,11 +366,10 @@ int get_android_id(jobject view) {
     return c::env->CallIntMethod(view, getId);
 }
 
-void floui_log(const std::string &s) {
+void floui_log0(const char *s) {
     auto cl = c::env->FindClass("android/util/Log");
     auto e = c::env->GetStaticMethodID(cl, "d", "(Ljava/lang/String;Ljava/lang/String;)I");
-    c::env->CallStaticIntMethod(cl, e, c::env->NewStringUTF("FlouiApp"),
-                                c::env->NewStringUTF(s.c_str()));
+    c::env->CallStaticIntMethod(cl, e, c::env->NewStringUTF("FlouiApp"), c::env->NewStringUTF(s));
 }
 
 static constexpr uint32_t argb2rgba(uint32_t argb) { return (argb << 24) | (argb >> 8); }
@@ -894,7 +900,7 @@ DEFINE_STYLES(ImageView)
 - (void)dealloc;
 @end
 
-void floui_log(const std::string &s) { NSLog(@"%@", [NSString stringWithUTF8String:s.c_str()]); }
+void floui_log0(const char *s) { NSLog(@"%@", [NSString stringWithUTF8String:s]); }
 
 @implementation Callback
 - (id)initWithTarget:(void *)target Cb:(const std::function<void(Widget &)> &)f {
