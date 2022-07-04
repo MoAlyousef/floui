@@ -38,10 +38,7 @@ struct FlouiViewControllerImpl;
 void floui_log0(const char *s);
 
 /// log to console, mainly to avoid triggering -Wformat-nonliteral
-int floui_log(const char *s) {
-    floui_log0(s);
-    return 0;
-}
+int floui_log(const char *s);
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
@@ -368,7 +365,7 @@ int get_android_id(jobject view) {
 
 void floui_log0(const char *s) {
     auto cl = c::env->FindClass("android/util/Log");
-    auto e = c::env->GetStaticMethodID(cl, "d", "(Ljava/lang/String;Ljava/lang/String;)I");
+    auto e = c::env->GetStaticMethodID(cl, "e", "(Ljava/lang/String;Ljava/lang/String;)I");
     c::env->CallStaticIntMethod(cl, e, c::env->NewStringUTF("FlouiApp"), c::env->NewStringUTF(s));
 }
 
@@ -901,6 +898,11 @@ DEFINE_STYLES(ImageView)
 @end
 
 void floui_log0(const char *s) { NSLog(@"%@", [NSString stringWithUTF8String:s]); }
+
+int floui_log(const char *s) {
+    floui_log0(s);
+    return 0;
+}
 
 @implementation Callback
 - (id)initWithTarget:(void *)target Cb:(const std::function<void(Widget &)> &)f {
