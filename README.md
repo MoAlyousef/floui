@@ -10,8 +10,8 @@ floui, pronounced "flowy", is a proof-of-concept single header C++17 lib inspire
 - VStack (Vertical UIStackView on iOS and LinearLayout on Android)
 - HStack (Horizontal UIStackView on iOS and LinearLayout on Android)
 - Spacer
-- Toggle/Check
-- Slider
+- Toggle/Check (tvOS doesn't support it)
+- Slider (tvOS doesn't support it)
 - ImageView
 
 ## Why
@@ -229,11 +229,11 @@ Building for production is easier done through the IDE which offers codesigning 
 ## Current limitations:
 - Use of const std::string& for text values, std::string_view might not be null-terminated. Converting NSString or jstring from a c string requires strings to be null-terminated.
 - Sliders on Android take the full width of the LinearLayout, so this must be taken into consideration if code is shared also with iOS.
-- Users of this library should ensure correct type usage when acquiring the type from Widget:
+- Users of this library should ensure correct type usage when acquiring the type from a Widget, like in a callback:
 ```cpp
 auto button = Widget::from_id<Button>("some_id");
 // or
-auto slider = Slider(w.inner());
+auto slider = Slider(some_widget.inner());
 ```
 Maybe std::any can be used in the library and such casts can pass thru std::any_cast, the problem on Android is that everything is a jobject, and equality can only be checked via JNIenv::IsSameObject, also RTTI is disabled by default on ndk-build. 
 - Adding images has to be in the project's resource file. 
