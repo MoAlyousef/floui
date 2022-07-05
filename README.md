@@ -16,15 +16,15 @@ floui, pronounced "flowy", is a proof-of-concept single header C++17 lib inspire
 
 ## Why
 - A single language for iOS and Android development using native controls.
-- C++ is already supported, so why not use it to instantiate native controls.
+- C++ is already supported on both platforms and their de facto IDE's, so why not use it to instantiate native controls.
 - Adds little overhead compared to managed languages targetting iOS and Android.
 - Ability to use C/C++ (and in case of iOS, Objective-C/C++) within your codebase.
 - Builds with your codebase, no toolchain/build system manipulation required.
 
 ## Why not
-- Currently most controls aren't wrapped.
+- Missing controls (WebView, TableView etc). 
 - Trying to do anything more involved, you'd have to use the native language of the platform. In Android's case, jni programming is a circle of hell of its own. You can however access the natively created views from Java.
-- WatchOS is not wrapped, since it doesn't use UIKit.
+- WatchOS is not wrapped, since it doesn't use UIKit. 
 - If you're only targetting apple platforms, SwiftUI is more pleasant to write and can target all apple platforms, include WatchOS and OSX.
 - Too early for complex guis. Doesn't support fragments, multiple views, navigation. 
 
