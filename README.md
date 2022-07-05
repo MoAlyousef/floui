@@ -220,7 +220,7 @@ And then configured:
     - You can build using the gradlew script that Android Studio prepares for your project:
     `./gradelw assembleDebug` or `gradlew.bat assembleDebug` on Windows
     - To install on a device:
-    `adb install -r app/build/outputs/apk/app-debug.apk` (use the name of the generated apk)
+    `gradlew installDebug` or `adb install -r app/build/outputs/apk/app-debug.apk` (use the name of the generated apk)
     Make sure adb is installed and in your PATH.
 
 Building for production is easier done through the IDE which offers codesigning and code-shrinking on Android.
