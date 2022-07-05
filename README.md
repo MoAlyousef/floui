@@ -180,6 +180,51 @@ Java_com_example_myapplication_MainActivity_findNativeViewById(JNIEnv *env, jobj
 ```
 Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
 
+## Usage outside of the platform IDE
+Once you've created your project in XCode or Android Studio, development no longer requires them. You can simply invoke the build system directly (xcodebuild or gradle) from the command-line.
+- iOS
+    - To build for simulator:
+    `xcodebuild build -configuration Debug -sdk iphonesimulator CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO`
+    - To boot a simulator from the command-line:
+    `xcrun simctl list` then `xcrun simctl boot <device>`. e.x. `xcrun simctl boot "iPhone 13 Pro"`.
+    - To run on the simulator:
+    ```
+    xcrun simctl install "iPhone 13 Pro" build/Debug-iphonesimulator/myproj.app
+    xcrun simctl launch "iPhone 13 Pro" com.neurosrg.myproj
+    ```
+    The launch command should use your bundle identifier (can be found when you create the XCode project under General > Identity)
+
+P.S. You can also generate your project using CMake using the https://github.com/leetal/ios-cmake toolchain file. Your CMakeLists.txt would look something like:
+```cmake
+cmake_minimum_required(VERSION 3.0)
+project(myproj)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+set(MACOSX_BUNDLE_BUNDLE_NAME "A myproj example")
+set(MACOSX_BUNDLE_BUNDLE_VERSION 0.1.0)
+set(MACOSX_BUNDLE_COPYRIGHT "Copyright © 2022 moalyousef.github.io. All rights reserved.")
+set(MACOSX_BUNDLE_GUI_IDENTIFIER com.neurosrg.myproj)
+set(MACOSX_BUNDLE_ICON_FILE app)
+set(MACOSX_BUNDLE_LONG_VERSION_STRING 0.1.0)
+set(MACOSX_BUNDLE_SHORT_VERSION_STRING 0.1)
+
+add_executable(myproj src/main.mm)
+target_link_libraries(myproj PUBLIC "-framework UIKit")
+target_compile_features(myproj PUBLIC cxx_std_17)
+```
+And then configured:
+`cmake -Bbin -GXcode -DCMAKE_TOOLCHAIN_FILE=ios.toolchain.cmake -DPLATFORM=OS64COMBINED`. This can then be built from the command-line using xcodebuild.
+
+- Android
+    - You can build using the gradlew script that Android Studio prepares for your project:
+    `./gradelw assembleDebug` or `gradlew.bat assembleDebug` on Windows
+    - To install on a device:
+    `adb install -r app/build/outputs/apk/app-debug.apk` (use the name of the generated apk)
+    Make sure adb is installed and in your PATH.
+
+Building for production is easier done through the IDE which offers codesigning and code-shrinking on Android.
+
 ## Current limitations:
 - Use of const std::string& for text values, std::string_view might not be null-terminated. Converting NSString or jstring from a c string requires strings to be null-terminated.
 - Sliders on Android take the full width of the LinearLayout, so this must be taken into consideration if code is shared also with iOS.
