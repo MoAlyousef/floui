@@ -181,7 +181,7 @@ Java_com_example_myapplication_MainActivity_findNativeViewById(JNIEnv *env, jobj
 Only add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
 
 ## Usage outside of the platform IDE
-Once you've created your project in XCode or Android Studio, development no longer requires them. You can simply invoke the build system directly (xcodebuild or gradle) from the command-line.
+Once you've created your project in XCode or Android Studio, development no longer requires them. You can continue using them or use your preferred code editor. You can simply invoke the build system directly (xcodebuild or gradle) from the command-line.
 - iOS
     - To build for simulator:
     `xcodebuild build -configuration Debug -sdk iphonesimulator CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO`
