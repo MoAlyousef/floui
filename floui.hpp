@@ -369,6 +369,11 @@ void floui_log0(const char *s) {
     c::env->CallStaticIntMethod(cl, e, c::env->NewStringUTF("FlouiApp"), c::env->NewStringUTF(s));
 }
 
+int floui_log(const char *s) {
+    floui_log0(s);
+    return 0;
+}
+
 static constexpr uint32_t argb2rgba(uint32_t argb) { return (argb << 24) | (argb >> 8); }
 
 #define DEFINE_STYLES(widget)                                                                      \
