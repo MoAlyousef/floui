@@ -26,7 +26,7 @@ floui, pronounced "flowy", is a proof-of-concept single header C++17 lib inspire
 - Missing controls (WebView, TableView etc). 
 - Trying to do anything more involved, you'd have to use the native language of the platform. In Android's case, jni programming is a circle of hell of its own. You can however access the natively created views from Java.
 - WatchOS is not wrapped, since it doesn't use UIKit. 
-- If you're only targetting apple platforms, SwiftUI is more pleasant to write and can target all apple platforms, include WatchOS and OSX.
+- If you're only targetting apple platforms, SwiftUI is more pleasant to write and can target all apple platforms, including WatchOS and OSX.
 - Too early for complex guis. Doesn't support fragments, multiple views, navigation. 
 
 ## Usage
@@ -75,7 +75,7 @@ MainView myview(const FlouiViewController &fvc) {
 
 @end
 ```
-Add the `#define FLOUI_IMPL` before including floui.hpp in only one source file.
+Add the `#define FLOUI_IMPL` before including floui.hpp in only one Objective-C++ source file.
 
 ### Android
 Assuming your application is called "My Application" (the default for Android Studio):
