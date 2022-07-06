@@ -20,6 +20,7 @@ floui, pronounced "flowy", is a proof-of-concept single header C++17 lib inspire
 - Adds little overhead compared to managed languages targetting iOS and Android.
 - Ability to use C/C++ (and in case of iOS, Objective-C/C++) within your codebase.
 - Builds with your codebase, no toolchain/build system manipulation required.
+- Produces slimmer binaries than Swift. Also doesn't require rebuilding your app with each XCode release (in Swift's case). 
 
 ## Why not
 - Missing controls (WebView, TableView etc). 
