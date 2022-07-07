@@ -286,6 +286,13 @@ class ImageView : public Widget {
     ImageView &image(const std::string &path);
     DECLARE_STYLES(ImageView)
 };
+
+class WebView: public Widget {
+    public:
+      explicit WebView(void *v);
+      WebView();
+      WebView &load_url(const std::string &local_path);
+};
 } // namespace floui
 
 #ifdef FLOUI_IMPL
@@ -929,6 +936,7 @@ int floui_log(const char *s) {
 #if TARGET_OS_IPHONE
 // ios stuff
 #import <UIKit/UIKit.h>
+#import <WebKit/WKWebView.h>
 
 struct FlouiViewControllerImpl {
     static inline UIViewController *vc = nullptr;
@@ -1465,6 +1473,38 @@ ImageView &ImageView::image(const std::string &path) {
 }
 
 DEFINE_STYLES(ImageView)
+
+WebView::WebView(void *v): Widget(v) {}
+
+WebView::WebView(): Widget((void *)CFBridgingRetain([WKWebView new])) {}
+
+std::string get_ext(const std::string &http) {
+    return http.substr(http.find_last_of('.') + 1, http.size());
+}
+
+std::string get_stem(const std::string &http) {
+    return http.substr(http.find_last_of('/') + 1, http.find('.') - http.find_last_of('/') - 1);
+}
+
+std::string get_subdir(const std::string &http) {
+    auto last = http.find_last_of('/');
+    if (last == 7) {
+        return "";
+    }
+    return http.substr(http.find_first_of("file:///") + 8, last - 8);
+}
+
+WebView &WebView::load_url(const std::string &local_path) {
+    auto v = (__bridge WKWebView *)view;
+    auto bundle = [NSBundle mainBundle];
+    auto stem = [NSString stringWithUTF8String:get_stem(local_path).c_str()];
+    auto ext = [NSString stringWithUTF8String:get_ext(local_path).c_str()];
+    auto dir = [NSString stringWithUTF8String:get_subdir(local_path).c_str()];
+    auto url = [bundle URLForResource:stem withExtension:ext subdirectory:dir];
+    [v loadFileURL:url allowingReadAccessToURL:url.URLByDeletingLastPathComponent];
+}
+
+DEFINE_STYLES(WebView)
 
 #endif // TARGET_OS_IPHONE
 
