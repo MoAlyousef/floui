@@ -292,6 +292,7 @@ class WebView: public Widget {
       explicit WebView(void *v);
       WebView();
       WebView &load_url(const std::string &local_path);
+      DECLARE_STYLES(WebView)
 };
 } // namespace floui
 
@@ -1474,6 +1475,8 @@ ImageView &ImageView::image(const std::string &path) {
 
 DEFINE_STYLES(ImageView)
 
+#ifdef FLOUI_IOS_WEBVIEW
+
 WebView::WebView(void *v): Widget(v) {}
 
 WebView::WebView(): Widget((void *)CFBridgingRetain([WKWebView new])) {}
@@ -1502,9 +1505,12 @@ WebView &WebView::load_url(const std::string &local_path) {
     auto dir = [NSString stringWithUTF8String:get_subdir(local_path).c_str()];
     auto url = [bundle URLForResource:stem withExtension:ext subdirectory:dir];
     [v loadFileURL:url allowingReadAccessToURL:url.URLByDeletingLastPathComponent];
+    return *this;
 }
 
 DEFINE_STYLES(WebView)
+
+#endif
 
 #endif // TARGET_OS_IPHONE
 

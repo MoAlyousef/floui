@@ -241,7 +241,8 @@ Maybe std::any can be used in the library and such casts can pass thru std::any_
 - Adding images has to be in the project's resource file. 
     - In Android Studio: Resource Manager, Import Drawables. This will add the file to res/drawable. The file can be accessed directly ImageView("MyImage.jpg").
     - In XCode: You can simply drag images into Assets.xcassets, then the image can be accessed directly ImageView("MyImage.jpg").
-- Using the WebView widget on iOS requires adding WebKit.framework under General > Frameworks, Libraries and Embedded Content. Also on ios and android, it requires a file url starting with `file:///`. The location of the file can be passed to WebView::load_url(). On iOS it requires adding the html/css/js files to your project using add File > Add Files ... (and accepting the prompt to copy the files). On Android, it requires adding the files to an Android asset folder: File > New > Folder > Assets folder.
+- Using the WebView widget on iOS requires adding WebKit.framework under General > Frameworks, Libraries and Embedded Content. It also requires defining FLOUI_IOS_WEBVIEW.
+Also on ios and android, it requires a file url starting with `file:///`. The location of the file can be passed to WebView::load_url(). On iOS it requires adding the html/css/js files to your project using add File > Add Files ... (and accepting the prompt to copy the files). On Android, it requires adding the files to an Android asset folder: File > New > Folder > Assets folder.
 - Widgets are not thread-safe.
 
 ## Todo
