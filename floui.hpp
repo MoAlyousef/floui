@@ -287,12 +287,14 @@ class ImageView : public Widget {
     DECLARE_STYLES(ImageView)
 };
 
-class WebView: public Widget {
-    public:
-      explicit WebView(void *v);
-      WebView();
-      WebView &load_url(const std::string &local_path);
-      DECLARE_STYLES(WebView)
+class WebView : public Widget {
+  public:
+    explicit WebView(void *v);
+    WebView();
+    WebView &load_file_url(const std::string &local_path);
+    WebView &load_http_url(const std::string &local_path);
+    WebView &load_html(const std::string &html);
+    DECLARE_STYLES(WebView)
 };
 } // namespace floui
 
@@ -896,6 +898,43 @@ ImageView &ImageView::image(const std::string &path) {
 
 DEFINE_STYLES(ImageView)
 
+void *WebView_init() {
+    auto view = android_new_view("android/webkit/WebView");
+    return c::env->NewWeakGlobalRef(view);
+}
+
+WebView::WebView(void *v) : Widget(v) {}
+
+WebView::WebView() : Widget(WebView_init()) {}
+
+WebView &WebView::load_file_url(const std::string &local_path) {
+    auto v = (jobject)view;
+    auto loadUrl = env->GetMethodID(c::env->GetObjectClass(v), "loadUrl", "(Ljava/lang/String;)V");
+    auto path = std::string("file:///android_asset/" +
+                            local_path.substr(local_path.find("file:///") + 8, local_path.size()));
+    c::env->CallVoidMethod(v, loadUrl, c::env->NewStringUTF(path.c_str()));
+    return *this;
+}
+
+WebView &WebView::load_http_url(const std::string &path) {
+    auto v = (jobject)view;
+    auto loadUrl = env->GetMethodID(c::env->GetObjectClass(v), "loadUrl", "(Ljava/lang/String;)V");
+    c::env->CallVoidMethod(v, loadUrl, c::env->NewStringUTF(path.c_str()));
+    return *this;
+}
+
+WebView &WebView::load_html(const std::string &html) {
+    auto v = (jobject)view;
+    auto loadData = env->GetMethodID(cls, "loadDataWithBaseURL",
+                                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/"
+                                     "lang/String;Ljava/lang/String;)V");
+    c::env->CallVoidMethod(v, loadData, nullptr, c::env->NewStringUTF(html.c_str()),
+                           c::env->NewStringUTF("text/html"), c::env->NewStringUTF("utf-8"), null);
+    return *this;
+}
+
+DEFINE_STYLES(WebView)
+
 #elif defined(__APPLE__) && defined(__OBJC__)
 
 #import <Foundation/Foundation.h>
@@ -1477,9 +1516,9 @@ DEFINE_STYLES(ImageView)
 
 #ifdef FLOUI_IOS_WEBVIEW
 
-WebView::WebView(void *v): Widget(v) {}
+WebView::WebView(void *v) : Widget(v) {}
 
-WebView::WebView(): Widget((void *)CFBridgingRetain([WKWebView new])) {}
+WebView::WebView() : Widget((void *)CFBridgingRetain([WKWebView new])) {}
 
 std::string get_ext(const std::string &http) {
     return http.substr(http.find_last_of('.') + 1, http.size());
@@ -1497,7 +1536,7 @@ std::string get_subdir(const std::string &http) {
     return http.substr(http.find_first_of("file:///") + 8, last - 8);
 }
 
-WebView &WebView::load_url(const std::string &local_path) {
+WebView &WebView::load_file_url(const std::string &local_path) {
     auto v = (__bridge WKWebView *)view;
     auto bundle = [NSBundle mainBundle];
     auto stem = [NSString stringWithUTF8String:get_stem(local_path).c_str()];
@@ -1508,9 +1547,24 @@ WebView &WebView::load_url(const std::string &local_path) {
     return *this;
 }
 
+WebView &WebView::load_http_url(const std::string &path) {
+    auto v = (__bridge WKWebView *)view;
+    [v loadRequest:[NSURLRequest
+                       requestWithURL:[NSURL
+                                          URLWithString:[NSString
+                                                            stringWithUTF8String:path.c_str()]]]];
+    return *this;
+}
+
+WebView &WebView::load_http_url(const std::string &path) {
+    auto v = (__bridge WKWebView *)view;
+    [v loadHTMLString:[NSString stringWithUTF8String:path.c_str()] baseURL:nil];
+    return *this;
+}
+
 DEFINE_STYLES(WebView)
 
-#endif
+#endif // FLOUI_IOS_WEBVIEW
 
 #endif // TARGET_OS_IPHONE
 
