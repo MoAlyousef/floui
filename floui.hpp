@@ -909,7 +909,8 @@ WebView::WebView() : Widget(WebView_init()) {}
 
 WebView &WebView::load_file_url(const std::string &local_path) {
     auto v = (jobject)view;
-    auto loadUrl = c::env->GetMethodID(c::env->GetObjectClass(v), "loadUrl", "(Ljava/lang/String;)V");
+    auto loadUrl =
+        c::env->GetMethodID(c::env->GetObjectClass(v), "loadUrl", "(Ljava/lang/String;)V");
     auto path = std::string("file:///android_asset/" +
                             local_path.substr(local_path.find("file:///") + 8, local_path.size()));
     c::env->CallVoidMethod(v, loadUrl, c::env->NewStringUTF(path.c_str()));
@@ -918,18 +919,21 @@ WebView &WebView::load_file_url(const std::string &local_path) {
 
 WebView &WebView::load_http_url(const std::string &path) {
     auto v = (jobject)view;
-    auto loadUrl = c::env->GetMethodID(c::env->GetObjectClass(v), "loadUrl", "(Ljava/lang/String;)V");
+    auto loadUrl =
+        c::env->GetMethodID(c::env->GetObjectClass(v), "loadUrl", "(Ljava/lang/String;)V");
     c::env->CallVoidMethod(v, loadUrl, c::env->NewStringUTF(path.c_str()));
     return *this;
 }
 
 WebView &WebView::load_html(const std::string &html) {
     auto v = (jobject)view;
-    auto loadData = c::env->GetMethodID(c::env->GetObjectClass(v), "loadDataWithBaseURL",
-                                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/"
-                                     "lang/String;Ljava/lang/String;)V");
+    auto loadData =
+        c::env->GetMethodID(c::env->GetObjectClass(v), "loadDataWithBaseURL",
+                            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/"
+                            "lang/String;Ljava/lang/String;)V");
     c::env->CallVoidMethod(v, loadData, nullptr, c::env->NewStringUTF(html.c_str()),
-                           c::env->NewStringUTF("text/html"), c::env->NewStringUTF("utf-8"), null);
+                           c::env->NewStringUTF("text/html"), c::env->NewStringUTF("utf-8"),
+                           nullptr);
     return *this;
 }
 
