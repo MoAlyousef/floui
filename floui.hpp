@@ -1560,7 +1560,7 @@ WebView &WebView::load_http_url(const std::string &path) {
     return *this;
 }
 
-WebView &WebView::load_http_url(const std::string &path) {
+WebView &WebView::load_html(const std::string &path) {
     auto v = (__bridge WKWebView *)view;
     [v loadHTMLString:[NSString stringWithUTF8String:path.c_str()] baseURL:nil];
     return *this;
