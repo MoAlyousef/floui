@@ -3,6 +3,7 @@
 
 #include <TargetConditionals.h>
 #if TARGET_OS_IPHONE
+#define FLOUI_IOS_WEBVIEW
 #define FLOUI_IMPL
 #else
 #import <Cocoa/Cocoa.h>
