@@ -1522,7 +1522,11 @@ DEFINE_STYLES(ImageView)
 
 WebView::WebView(void *v) : Widget(v) {}
 
-WebView::WebView() : Widget((void *)CFBridgingRetain([WKWebView new])) {}
+WebView::WebView() : Widget((void *)CFBridgingRetain([WKWebView new])) {
+    auto vc = FlouiViewControllerImpl::vc;
+    auto frame = vc.view.frame;
+    Widget(view).size(frame.size.width, frame.size.height - 120);
+}
 
 std::string get_ext(const std::string &http) {
     return http.substr(http.find_last_of('.') + 1, http.size());

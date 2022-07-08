@@ -246,8 +246,6 @@ Maybe std::any can be used in the library and such casts can pass thru std::any_
         - Requires adding WebKit.framework under General > Frameworks, Libraries and Embedded Content. 
         - Requires defining FLOUI_IOS_WEBVIEW since WebKit isn't linked by default, this avoids link errors.
         - To load local files, precede theme with `file:///` and the path of the file, which should be added to your xcode project. The path can be passed to WebView::load_file_url().
-        - iOS requires the WebView widget to have a predefined size, so you can use WebView::size(w, h) to set its size.
-
     - On Android:
         - To load local files, precede them with `file:///` and the path of the file, which should be added to an assets folder (File > New > Folder > Assets folder). 
         - To load http requests, you need to enable the internet permission in your AndroidManifest.xml:
