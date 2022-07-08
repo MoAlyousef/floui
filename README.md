@@ -24,7 +24,7 @@ floui, pronounced "flowy", is a proof-of-concept single header C++17 lib inspire
 - Produces slimmer binaries than Swift. Also doesn't require rebuilding your app with each XCode release (in Swift's case). 
 
 ## Why not
-- Missing controls (WebView, TableView etc). 
+- Missing controls (TableView, ScrollView etc). 
 - Trying to do anything more involved, you'd have to use the native language of the platform. In Android's case, jni programming is a circle of hell of its own. You can however access the natively created views from Java.
 - WatchOS is not wrapped, since it doesn't use UIKit. 
 - If you're only targetting apple platforms, SwiftUI is more pleasant to write and can target all apple platforms, including WatchOS and OSX.
@@ -241,8 +241,18 @@ Maybe std::any can be used in the library and such casts can pass thru std::any_
 - Adding images has to be in the project's resource file. 
     - In Android Studio: Resource Manager, Import Drawables. This will add the file to res/drawable. The file can be accessed directly ImageView("MyImage.jpg").
     - In XCode: You can simply drag images into Assets.xcassets, then the image can be accessed directly ImageView("MyImage.jpg").
-- Using the WebView widget on iOS requires adding WebKit.framework under General > Frameworks, Libraries and Embedded Content. It also requires defining FLOUI_IOS_WEBVIEW.
-Also on ios and android, it requires a file url starting with `file:///`. The location of the file can be passed to WebView::load_url(). On iOS it requires adding the html/css/js files to your project using add File > Add Files ... (and accepting the prompt to copy the files). On Android, it requires adding the files to an Android asset folder: File > New > Folder > Assets folder.
+- Using the WebView widget
+    - on iOS:
+        - Requires adding WebKit.framework under General > Frameworks, Libraries and Embedded Content. 
+        - Requires defining FLOUI_IOS_WEBVIEW since WebKit isn't linked by default, this avoids link errors.
+        - To load local files, precede theme with `file:///` and the path of the file, which should be added to your xcode project. The path can be passed to WebView::load_file_url().
+        - iOS requires the WebView widget to have a predefined size, so you can use WebView::size(w, h) to set its size.
+
+    - On Android:
+        - To load local files, precede them with `file:///` and the path of the file, which should be added to an assets folder (File > New > Folder > Assets folder). 
+        - To load http requests, you need to enable the internet permission in your AndroidManifest.xml:
+        `<uses-permission android:name="android.permission.INTERNET" />`
+
 - Widgets are not thread-safe.
 
 ## Todo
