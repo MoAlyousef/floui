@@ -14,6 +14,7 @@ floui, pronounced "flowy", is a proof-of-concept single header C++17 lib inspire
 - Slider (tvOS doesn't support it)
 - ImageView
 - WebView
+- ScrollView
 
 ## Why
 - A single language for iOS and Android development using native controls.
@@ -24,7 +25,7 @@ floui, pronounced "flowy", is a proof-of-concept single header C++17 lib inspire
 - Produces slimmer binaries than Swift. Also doesn't require rebuilding your app with each XCode release (in Swift's case). 
 
 ## Why not
-- Missing controls (TableView, ScrollView etc). 
+- Missing controls (ex. TableView). 
 - Trying to do anything more involved, you'd have to use the native language of the platform. In Android's case, jni programming is a circle of hell of its own. You can however access the natively created views from Java.
 - WatchOS is not wrapped, since it doesn't use UIKit. 
 - If you're only targetting apple platforms, SwiftUI is more pleasant to write and can target all apple platforms, including WatchOS and OSX.

@@ -297,6 +297,13 @@ class WebView : public Widget {
     WebView &load_html(const std::string &html);
     DECLARE_STYLES(WebView)
 };
+
+class ScrollView : public Widget {
+  public:
+    explicit ScrollView(void *v);
+    ScrollView(const Widget &w);
+    DECLARE_STYLES(WebView)
+};
 } // namespace floui
 
 #ifdef FLOUI_IMPL
@@ -949,6 +956,22 @@ WebView &WebView::load_url(const std::string &url) {
 
 DEFINE_STYLES(WebView)
 
+void *ScrollView_init() {
+    auto view = android_new_view("android/widget/ScrollView");
+    return c::env->NewWeakGlobalRef(view);
+}
+
+ScrollView::ScrollView(void *v): Widget(v) {}
+
+ScrollView::ScrollView(const Widget &w): Widget(ScrollView_init()) {
+    auto v = (jobject)view;
+    auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
+                                       "(Landroid/view/View;)V");
+    c::env->CallVoidMethod(v, addview, (jobject)w.inner());
+}
+
+DEFINE_STYLES(ScrollView)
+
 #elif defined(__APPLE__) && defined(__OBJC__)
 
 #import <Foundation/Foundation.h>
@@ -1592,6 +1615,21 @@ WebView &WebView::load_url(const std::string &url) {
 DEFINE_STYLES(WebView)
 
 #endif // FLOUI_IOS_WEBVIEW
+
+ScrollView::ScrollView(void *v): Widget(v) {}
+
+ScrollView::ScrollView(const Widget &w): Widget((void *)CFBridgingRetain([UIScrollView new])) {
+    auto v = (__bridge UIScrollView *)view;
+    auto i = (__bridge UIView *)w.inner();
+    i.translatesAutoresizingMaskIntoConstraints = NO;
+    [v addSubview:i];
+    if (i.frame.size.width != 0)
+        [i.widthAnchor constraintEqualToConstant:i.frame.size.width].active = YES;
+    if (i.frame.size.height != 0)
+        [i.heightAnchor constraintEqualToConstant:i.frame.size.height].active = YES;
+}
+
+DEFINE_STYLES(ScrollView)
 
 #endif // TARGET_OS_IPHONE
 
