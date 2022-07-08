@@ -293,6 +293,7 @@ class WebView : public Widget {
     WebView();
     WebView &load_file_url(const std::string &local_path);
     WebView &load_http_url(const std::string &local_path);
+    WebView &load_url(const std::string &url);
     WebView &load_html(const std::string &html);
     DECLARE_STYLES(WebView)
 };
@@ -937,6 +938,15 @@ WebView &WebView::load_html(const std::string &html) {
     return *this;
 }
 
+WebView &WebView::load_url(const std::string &url) {
+    if (url.find("file://") == 0) {
+        load_file_url(url);
+    } else {
+        load_http_url(url);
+    }
+    return *this;
+}
+
 DEFINE_STYLES(WebView)
 
 #elif defined(__APPLE__) && defined(__OBJC__)
@@ -1567,6 +1577,15 @@ WebView &WebView::load_http_url(const std::string &path) {
 WebView &WebView::load_html(const std::string &path) {
     auto v = (__bridge WKWebView *)view;
     [v loadHTMLString:[NSString stringWithUTF8String:path.c_str()] baseURL:nil];
+    return *this;
+}
+
+WebView &WebView::load_url(const std::string &url) {
+    if (url.find("file://") == 0) {
+        load_file_url(url);
+    } else {
+        load_http_url(url);
+    }
     return *this;
 }
 
