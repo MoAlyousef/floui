@@ -237,9 +237,9 @@ class MainView : public Widget {
     /// Sets the spacing between items
     MainView &spacing(int val);
     /// Add a widget
-    MainView &add(Widget &w);
+    MainView &add(const Widget &w);
     /// Remove a widget
-    MainView &remove(Widget &w);
+    MainView &remove(const Widget &w);
     /// Clears the view
     MainView &clear();
     DECLARE_STYLES(MainView)
@@ -252,9 +252,9 @@ class VStack : public Widget {
     /// Sets the spacing between items
     VStack &spacing(int val);
     /// Add a widget
-    VStack &add(Widget &w);
+    VStack &add(const Widget &w);
     /// Remove a widget
-    VStack &remove(Widget &w);
+    VStack &remove(const Widget &w);
     /// Clears the view
     VStack &clear();
     DECLARE_STYLES(VStack)
@@ -267,9 +267,9 @@ class HStack : public Widget {
     /// Sets the spacing between items
     HStack &spacing(int val);
     /// Add a widget
-    HStack &add(Widget &w);
+    HStack &add(const Widget &w);
     /// Remove a widget
-    HStack &remove(Widget &w);
+    HStack &remove(const Widget &w);
     /// Clears the view
     HStack &clear();
     DECLARE_STYLES(HStack)
@@ -739,7 +739,7 @@ MainView::MainView(const FlouiViewController &, std::initializer_list<Widget> l)
 
 MainView &MainView::spacing(int) { return *this; }
 
-MainView &MainView::add(Widget &w) {
+MainView &MainView::add(const Widget &w) {
     auto v = (jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
@@ -747,7 +747,7 @@ MainView &MainView::add(Widget &w) {
     return *this;
 }
 
-MainView &MainView::remove(Widget &w) {
+MainView &MainView::remove(const Widget &w) {
     auto v = (jobject)view;
     auto removeView = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "removeView",
                                           "(Landroid/view/View;)V");
@@ -778,7 +778,7 @@ VStack::VStack(std::initializer_list<Widget> l) : Widget(VStack_init()) {
 
 VStack &VStack::spacing(int) { return *this; }
 
-VStack &VStack::add(Widget &w) {
+VStack &VStack::add(const Widget &w) {
     auto v = (jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
@@ -786,7 +786,7 @@ VStack &VStack::add(Widget &w) {
     return *this;
 }
 
-VStack &VStack::remove(Widget &w) {
+VStack &VStack::remove(const Widget &w) {
     auto v = (jobject)view;
     auto removeView = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "removeView",
                                           "(Landroid/view/View;)V");
@@ -827,7 +827,7 @@ HStack::HStack(std::initializer_list<Widget> l) : Widget(HStack_init()) {
 
 HStack &HStack::spacing(int) { return *this; }
 
-HStack &HStack::add(Widget &w) {
+HStack &HStack::add(const Widget &w) {
     auto v = (jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
@@ -835,7 +835,7 @@ HStack &HStack::add(Widget &w) {
     return *this;
 }
 
-HStack &HStack::remove(Widget &w) {
+HStack &HStack::remove(const Widget &w) {
     auto v = (jobject)view;
     auto removeView = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "removeView",
                                           "(Landroid/view/View;)V");
@@ -1388,7 +1388,7 @@ MainView &MainView::spacing(int val) {
     return *this;
 }
 
-MainView &MainView::add(Widget &w) {
+MainView &MainView::add(const Widget &w) {
     auto v = (__bridge UIStackView *)view;
     auto i = (__bridge UIView *)w.inner();
     i.translatesAutoresizingMaskIntoConstraints = NO;
@@ -1400,7 +1400,7 @@ MainView &MainView::add(Widget &w) {
     return *this;
 }
 
-MainView &MainView::remove(Widget &w) {
+MainView &MainView::remove(const Widget &w) {
     auto v = (__bridge UIStackView *)view;
     auto i = (__bridge UIView *)w.inner();
     if ([i isDescendantOfView:v])
@@ -1444,7 +1444,7 @@ VStack &VStack::spacing(int val) {
     return *this;
 }
 
-VStack &VStack::add(Widget &w) {
+VStack &VStack::add(const Widget &w) {
     auto v = (__bridge UIStackView *)view;
     auto i = (__bridge UIView *)w.inner();
     i.translatesAutoresizingMaskIntoConstraints = NO;
@@ -1456,7 +1456,7 @@ VStack &VStack::add(Widget &w) {
     return *this;
 }
 
-VStack &VStack::remove(Widget &w) {
+VStack &VStack::remove(const Widget &w) {
     auto v = (__bridge UIStackView *)view;
     auto i = (__bridge UIView *)w.inner();
     if ([i isDescendantOfView:v])
@@ -1500,7 +1500,7 @@ HStack &HStack::spacing(int val) {
     return *this;
 }
 
-HStack &HStack::add(Widget &w) {
+HStack &HStack::add(const Widget &w) {
     auto v = (__bridge UIStackView *)view;
     auto i = (__bridge UIView *)w.inner();
     i.translatesAutoresizingMaskIntoConstraints = NO;
@@ -1512,7 +1512,7 @@ HStack &HStack::add(Widget &w) {
     return *this;
 }
 
-HStack &HStack::remove(Widget &w) {
+HStack &HStack::remove(const Widget &w) {
     auto v = (__bridge UIStackView *)view;
     auto i = (__bridge UIView *)w.inner();
     if ([i isDescendantOfView:v])
