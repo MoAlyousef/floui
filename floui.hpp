@@ -302,7 +302,7 @@ class ScrollView : public Widget {
   public:
     explicit ScrollView(void *v);
     ScrollView(const Widget &w);
-    DECLARE_STYLES(WebView)
+    DECLARE_STYLES(ScrollView)
 };
 } // namespace floui
 
@@ -961,9 +961,9 @@ void *ScrollView_init() {
     return c::env->NewWeakGlobalRef(view);
 }
 
-ScrollView::ScrollView(void *v): Widget(v) {}
+ScrollView::ScrollView(void *v) : Widget(v) {}
 
-ScrollView::ScrollView(const Widget &w): Widget(ScrollView_init()) {
+ScrollView::ScrollView(const Widget &w) : Widget(ScrollView_init()) {
     auto v = (jobject)view;
     auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
                                        "(Landroid/view/View;)V");
@@ -1616,9 +1616,9 @@ DEFINE_STYLES(WebView)
 
 #endif // FLOUI_IOS_WEBVIEW
 
-ScrollView::ScrollView(void *v): Widget(v) {}
+ScrollView::ScrollView(void *v) : Widget(v) {}
 
-ScrollView::ScrollView(const Widget &w): Widget((void *)CFBridgingRetain([UIScrollView new])) {
+ScrollView::ScrollView(const Widget &w) : Widget((void *)CFBridgingRetain([UIScrollView new])) {
     auto v = (__bridge UIScrollView *)view;
     auto i = (__bridge UIView *)w.inner();
     i.translatesAutoresizingMaskIntoConstraints = NO;
