@@ -326,15 +326,21 @@ Color Color::rgb(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { return Color(r, g
 Color Color::system_purple() { return Color(0x7f007fff); }
 
 struct FlouiViewControllerImpl {
-    static inline JNIEnv *env = nullptr;
+    static inline JavaVM *vm = nullptr;
     static inline jobject main_activity = nullptr;
     static inline jobject layout = nullptr;
     static inline std::unordered_map<int, std::function<void(Widget &)> *> callbackmap = {};
 
     FlouiViewControllerImpl(JNIEnv *env, jobject m, jobject layout) {
-        FlouiViewControllerImpl::env = env;
-        FlouiViewControllerImpl::main_activity = m;
-        FlouiViewControllerImpl::layout = layout;
+        env->GetJavaVM(&vm);
+        FlouiViewControllerImpl::main_activity = env->NewWeakGlobalRef(m);
+        FlouiViewControllerImpl::layout = env->NewWeakGlobalRef(layout);
+    }
+
+    static JNIEnv *env() {
+        JNIEnv *env;
+        vm->GetEnv((void **)&env, JNI_VERSION_1_6);
+        return env;
     }
 };
 
@@ -357,34 +363,35 @@ FlouiViewController::~FlouiViewController() { delete impl; }
 using c = FlouiViewControllerImpl;
 
 static jobject android_new_view(const char *klass) {
-    auto k = c::env->FindClass(klass);
-    auto init = c::env->GetMethodID(k, "<init>", "(Landroid/content/Context;)V");
-    auto obj = c::env->NewObject(k, init, c::main_activity);
-    auto viewc = c::env->FindClass("android/view/View");
-    auto generateViewId = c::env->GetStaticMethodID(viewc, "generateViewId", "()I");
-    auto id = c::env->CallStaticIntMethod(viewc, generateViewId);
-    auto setId = c::env->GetMethodID(c::env->GetObjectClass(obj), "setId", "(I)V");
-    c::env->CallVoidMethod(obj, setId, id);
+    auto k = c::env()->FindClass(klass);
+    auto init = c::env()->GetMethodID(k, "<init>", "(Landroid/content/Context;)V");
+    auto obj = c::env()->NewObject(k, init, c::main_activity);
+    auto viewc = c::env()->FindClass("android/view/View");
+    auto generateViewId = c::env()->GetStaticMethodID(viewc, "generateViewId", "()I");
+    auto id = c::env()->CallStaticIntMethod(viewc, generateViewId);
+    auto setId = c::env()->GetMethodID(c::env()->GetObjectClass(obj), "setId", "(I)V");
+    c::env()->CallVoidMethod(obj, setId, id);
     return obj;
 }
 
 static jobject get_view_by_id(int val) {
-    auto viewc = c::env->FindClass("android/view/View");
-    auto findViewById = c::env->GetMethodID(viewc, "findViewById", "(I)Landroid/view/View;");
-    auto v = c::env->CallObjectMethod(c::main_activity, findViewById, val);
+    auto viewc = c::env()->FindClass("android/view/View");
+    auto findViewById = c::env()->GetMethodID(viewc, "findViewById", "(I)Landroid/view/View;");
+    auto v = c::env()->CallObjectMethod(c::main_activity, findViewById, val);
     return v;
 }
 
 int get_android_id(jobject view) {
-    auto viewc = c::env->FindClass("android/view/View");
-    auto getId = c::env->GetMethodID(viewc, "getId", "()I");
-    return c::env->CallIntMethod(view, getId);
+    auto viewc = c::env()->FindClass("android/view/View");
+    auto getId = c::env()->GetMethodID(viewc, "getId", "()I");
+    return c::env()->CallIntMethod(view, getId);
 }
 
 void floui_log0(const char *s) {
-    auto cl = c::env->FindClass("android/util/Log");
-    auto e = c::env->GetStaticMethodID(cl, "e", "(Ljava/lang/String;Ljava/lang/String;)I");
-    c::env->CallStaticIntMethod(cl, e, c::env->NewStringUTF("FlouiApp"), c::env->NewStringUTF(s));
+    auto cl = c::env()->FindClass("android/util/Log");
+    auto e = c::env()->GetStaticMethodID(cl, "e", "(Ljava/lang/String;Ljava/lang/String;)I");
+    c::env()->CallStaticIntMethod(cl, e, c::env()->NewStringUTF("FlouiApp"),
+                                  c::env()->NewStringUTF(s));
 }
 
 int floui_log(const char *s) {
@@ -398,8 +405,8 @@ static constexpr uint32_t argb2rgba(uint32_t argb) { return (argb << 24) | (argb
     widget &widget::background(uint32_t col) {                                                     \
         auto v = (jobject)view;                                                                    \
         auto setBackgroundColor =                                                                  \
-            c::env->GetMethodID(c::env->GetObjectClass(v), "setBackgroundColor", "(I)V");          \
-        c::env->CallVoidMethod(v, setBackgroundColor, argb2rgba(col));                             \
+            c::env()->GetMethodID(c::env()->GetObjectClass(v), "setBackgroundColor", "(I)V");      \
+        c::env()->CallVoidMethod(v, setBackgroundColor, argb2rgba(col));                           \
         return *this;                                                                              \
     }                                                                                              \
     widget &widget::id(const char *val) {                                                          \
@@ -408,12 +415,13 @@ static constexpr uint32_t argb2rgba(uint32_t argb) { return (argb << 24) | (argb
     }                                                                                              \
     widget &widget::size(int w, int h) {                                                           \
         auto v = (jobject)view;                                                                    \
-        auto layoutc = c::env->FindClass("android/widget/LinearLayout$LayoutParams");              \
-        auto init = c::env->GetMethodID(layoutc, "<init>", "(II)V");                               \
-        auto obj = c::env->NewObject(layoutc, init, w, h);                                         \
-        auto setLayoutParams = c::env->GetMethodID(c::env->GetObjectClass(v), "setLayoutParams",   \
-                                                   "(Landroid/view/ViewGroup$LayoutParams;)V");    \
-        c::env->CallVoidMethod(v, setLayoutParams, obj);                                           \
+        auto layoutc = c::env()->FindClass("android/widget/LinearLayout$LayoutParams");            \
+        auto init = c::env()->GetMethodID(layoutc, "<init>", "(II)V");                             \
+        auto obj = c::env()->NewObject(layoutc, init, w, h);                                       \
+        auto setLayoutParams =                                                                     \
+            c::env()->GetMethodID(c::env()->GetObjectClass(v), "setLayoutParams",                  \
+                                  "(Landroid/view/ViewGroup$LayoutParams;)V");                     \
+        c::env()->CallVoidMethod(v, setLayoutParams, obj);                                         \
         return *this;                                                                              \
     }
 
@@ -426,25 +434,25 @@ DEFINE_STYLES(Widget)
 void *Button_init() {
     auto view = android_new_view("android/widget/Button");
     auto setTransformationMethod =
-        c::env->GetMethodID(c::env->GetObjectClass(view), "setTransformationMethod",
-                            "(Landroid/text/method/TransformationMethod;)V");
-    c::env->CallVoidMethod(view, setTransformationMethod, nullptr);
-    return c::env->NewWeakGlobalRef(view);
+        c::env()->GetMethodID(c::env()->GetObjectClass(view), "setTransformationMethod",
+                              "(Landroid/text/method/TransformationMethod;)V");
+    c::env()->CallVoidMethod(view, setTransformationMethod, nullptr);
+    return c::env()->NewWeakGlobalRef(view);
 }
 
 Button::Button(void *b) : Widget(b) {}
 
 Button::Button(const std::string &label) : Widget(Button_init()) {
     auto v = (jobject)view;
-    auto setText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
-    c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
+    auto setText = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setText",
+                                         "(Ljava/lang/CharSequence;)V");
+    c::env()->CallVoidMethod(v, setText, c::env()->NewStringUTF(label.c_str()));
 }
 
 Button &Button::foreground(uint32_t c) {
     auto v = (jobject)view;
-    auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
-    c::env->CallVoidMethod(v, setTextColor, argb2rgba(c));
+    auto setTextColor = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setTextColor", "(I)V");
+    c::env()->CallVoidMethod(v, setTextColor, argb2rgba(c));
     return *this;
 }
 
@@ -452,9 +460,10 @@ Button &Button::filled() { return *this; }
 
 Button &Button::action(std::function<void(Widget &)> &&f) {
     auto v = (jobject)view;
-    auto setOnClickListener = c::env->GetMethodID(c::env->GetObjectClass(v), "setOnClickListener",
-                                                  "(Landroid/view/View$OnClickListener;)V");
-    c::env->CallVoidMethod(v, setOnClickListener, c::main_activity);
+    auto setOnClickListener =
+        c::env()->GetMethodID(c::env()->GetObjectClass(v), "setOnClickListener",
+                              "(Landroid/view/View$OnClickListener;)V");
+    c::env()->CallVoidMethod(v, setOnClickListener, c::main_activity);
     c::callbackmap[get_android_id(v)] = new std::function<void(Widget &)>(f);
     return *this;
 }
@@ -464,47 +473,48 @@ DEFINE_STYLES(Button)
 void *Toggle_init() {
     auto view = android_new_view("android/widget/Switch");
     auto setTransformationMethod =
-        c::env->GetMethodID(c::env->GetObjectClass(view), "setTransformationMethod",
-                            "(Landroid/text/method/TransformationMethod;)V");
-    c::env->CallVoidMethod(view, setTransformationMethod, nullptr);
-    return c::env->NewWeakGlobalRef(view);
+        c::env()->GetMethodID(c::env()->GetObjectClass(view), "setTransformationMethod",
+                              "(Landroid/text/method/TransformationMethod;)V");
+    c::env()->CallVoidMethod(view, setTransformationMethod, nullptr);
+    return c::env()->NewWeakGlobalRef(view);
 }
 
 Toggle::Toggle(void *b) : Widget(b) {}
 
 Toggle::Toggle(const std::string &label) : Widget(Toggle_init()) {
     auto v = (jobject)view;
-    auto setText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
-    c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
+    auto setText = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setText",
+                                         "(Ljava/lang/CharSequence;)V");
+    c::env()->CallVoidMethod(v, setText, c::env()->NewStringUTF(label.c_str()));
 }
 
 Toggle &Toggle::value(bool val) {
     auto v = (jobject)view;
     auto setChecked =
-        c::env->GetMethodID(c::env->FindClass("android/widget/Switch"), "setChecked", "(Z)V");
-    c::env->CallVoidMethod(v, setChecked, val);
+        c::env()->GetMethodID(c::env()->FindClass("android/widget/Switch"), "setChecked", "(Z)V");
+    c::env()->CallVoidMethod(v, setChecked, val);
     return *this;
 }
 
 bool Toggle::value() {
     auto v = (jobject)view;
-    auto isChecked = c::env->GetMethodID(c::env->GetObjectClass(v), "isChecked", "()Z");
-    return c::env->CallBooleanMethod(v, isChecked);
+    auto isChecked = c::env()->GetMethodID(c::env()->GetObjectClass(v), "isChecked", "()Z");
+    return c::env()->CallBooleanMethod(v, isChecked);
 }
 
 Toggle &Toggle::foreground(uint32_t c) {
     auto v = (jobject)view;
-    auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
-    c::env->CallVoidMethod(v, setTextColor, argb2rgba(c));
+    auto setTextColor = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setTextColor", "(I)V");
+    c::env()->CallVoidMethod(v, setTextColor, argb2rgba(c));
     return *this;
 }
 
 Toggle &Toggle::action(std::function<void(Widget &)> &&f) {
     auto v = (jobject)view;
-    auto setOnClickListener = c::env->GetMethodID(c::env->GetObjectClass(v), "setOnClickListener",
-                                                  "(Landroid/view/View$OnClickListener;)V");
-    c::env->CallVoidMethod(v, setOnClickListener, c::main_activity);
+    auto setOnClickListener =
+        c::env()->GetMethodID(c::env()->GetObjectClass(v), "setOnClickListener",
+                              "(Landroid/view/View$OnClickListener;)V");
+    c::env()->CallVoidMethod(v, setOnClickListener, c::main_activity);
     c::callbackmap[get_android_id(v)] = new std::function<void(Widget &)>(f);
     return *this;
 }
@@ -514,47 +524,48 @@ DEFINE_STYLES(Toggle)
 void *Check_init() {
     auto view = android_new_view("android/widget/CheckBox");
     auto setTransformationMethod =
-        c::env->GetMethodID(c::env->GetObjectClass(view), "setTransformationMethod",
-                            "(Landroid/text/method/TransformationMethod;)V");
-    c::env->CallVoidMethod(view, setTransformationMethod, nullptr);
-    return c::env->NewWeakGlobalRef(view);
+        c::env()->GetMethodID(c::env()->GetObjectClass(view), "setTransformationMethod",
+                              "(Landroid/text/method/TransformationMethod;)V");
+    c::env()->CallVoidMethod(view, setTransformationMethod, nullptr);
+    return c::env()->NewWeakGlobalRef(view);
 }
 
 Check::Check(void *b) : Widget(b) {}
 
 Check::Check(const std::string &label) : Widget(Check_init()) {
     auto v = (jobject)view;
-    auto setText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
-    c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
+    auto setText = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setText",
+                                         "(Ljava/lang/CharSequence;)V");
+    c::env()->CallVoidMethod(v, setText, c::env()->NewStringUTF(label.c_str()));
 }
 
 Check &Check::value(bool val) {
     auto v = (jobject)view;
     auto setChecked =
-        c::env->GetMethodID(c::env->FindClass("android/widget/CheckBox"), "setChecked", "(Z)V");
-    c::env->CallVoidMethod(v, setChecked, val);
+        c::env()->GetMethodID(c::env()->FindClass("android/widget/CheckBox"), "setChecked", "(Z)V");
+    c::env()->CallVoidMethod(v, setChecked, val);
     return *this;
 }
 
 bool Check::value() {
     auto v = (jobject)view;
-    auto isChecked = c::env->GetMethodID(c::env->GetObjectClass(v), "isChecked", "()Z");
-    return c::env->CallBooleanMethod(v, isChecked);
+    auto isChecked = c::env()->GetMethodID(c::env()->GetObjectClass(v), "isChecked", "()Z");
+    return c::env()->CallBooleanMethod(v, isChecked);
 }
 
 Check &Check::foreground(uint32_t c) {
     auto v = (jobject)view;
-    auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
-    c::env->CallVoidMethod(v, setTextColor, argb2rgba(c));
+    auto setTextColor = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setTextColor", "(I)V");
+    c::env()->CallVoidMethod(v, setTextColor, argb2rgba(c));
     return *this;
 }
 
 Check &Check::action(std::function<void(Widget &)> &&f) {
     auto v = (jobject)view;
-    auto setOnClickListener = c::env->GetMethodID(c::env->GetObjectClass(v), "setOnClickListener",
-                                                  "(Landroid/view/View$OnClickListener;)V");
-    c::env->CallVoidMethod(v, setOnClickListener, c::main_activity);
+    auto setOnClickListener =
+        c::env()->GetMethodID(c::env()->GetObjectClass(v), "setOnClickListener",
+                              "(Landroid/view/View$OnClickListener;)V");
+    c::env()->CallVoidMethod(v, setOnClickListener, c::main_activity);
     c::callbackmap[get_android_id(v)] = new std::function<void(Widget &)>(f);
     return *this;
 }
@@ -563,7 +574,7 @@ DEFINE_STYLES(Check)
 
 void *Slider_init() {
     auto view = android_new_view("com/google/android/material/slider/Slider");
-    return c::env->NewWeakGlobalRef(view);
+    return c::env()->NewWeakGlobalRef(view);
 }
 
 Slider::Slider(void *b) : Widget(b) {}
@@ -572,25 +583,25 @@ Slider::Slider() : Widget(Slider_init()) {}
 
 Slider &Slider::value(double val) {
     auto v = (jobject)view;
-    auto setValue = c::env->GetMethodID(c::env->GetObjectClass(v), "setValue", "(F)V");
-    c::env->CallVoidMethod(v, setValue, val);
+    auto setValue = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setValue", "(F)V");
+    c::env()->CallVoidMethod(v, setValue, val);
     return *this;
 }
 
 double Slider::value() {
     auto v = (jobject)view;
-    auto getValue = c::env->GetMethodID(c::env->GetObjectClass(v), "getValue", "()F");
-    return c::env->CallFloatMethod(v, getValue);
+    auto getValue = c::env()->GetMethodID(c::env()->GetObjectClass(v), "getValue", "()F");
+    return c::env()->CallFloatMethod(v, getValue);
 }
 
 Slider &Slider::foreground(uint32_t) { return *this; }
 
 Slider &Slider::action(std::function<void(Widget &)> &&f) {
     auto v = (jobject)view;
-    auto addOnChangeListener = c::env->GetMethodID(
-        c::env->FindClass("com/google/android/material/slider/Slider"), "addOnChangeListener",
+    auto addOnChangeListener = c::env()->GetMethodID(
+        c::env()->FindClass("com/google/android/material/slider/Slider"), "addOnChangeListener",
         "(Lcom/google/android/material/slider/BaseOnChangeListener;)V");
-    c::env->CallVoidMethod(v, addOnChangeListener, c::main_activity);
+    c::env()->CallVoidMethod(v, addOnChangeListener, c::main_activity);
     c::callbackmap[get_android_id(v)] = new std::function<void(Widget &)>(f);
     return *this;
 }
@@ -599,52 +610,52 @@ DEFINE_STYLES(Slider)
 
 void *Text_init() {
     auto view = android_new_view("android/widget/TextView");
-    return c::env->NewWeakGlobalRef(view);
+    return c::env()->NewWeakGlobalRef(view);
 }
 
 Text::Text(void *b) : Widget(b) {}
 
 Text::Text(const std::string &label) : Widget(Text_init()) {
     auto v = (jobject)view;
-    auto setText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
-    c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
+    auto setText = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setText",
+                                         "(Ljava/lang/CharSequence;)V");
+    c::env()->CallVoidMethod(v, setText, c::env()->NewStringUTF(label.c_str()));
 }
 
 Text &Text::fontsize(int size) {
     auto v = (jobject)view;
-    auto setTextSize = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextSize", "(F)V");
-    c::env->CallVoidMethod(v, setTextSize, (float)size);
+    auto setTextSize = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setTextSize", "(F)V");
+    c::env()->CallVoidMethod(v, setTextSize, (float)size);
     return *this;
 }
 
 Text &Text::bold() {
     auto v = (jobject)view;
-    auto setTypeface = c::env->GetMethodID(c::env->GetObjectClass(v), "setTypeface",
-                                           "(Landroid/graphics/Typeface;I)V");
-    c::env->CallVoidMethod(v, setTypeface, (jobject) nullptr, 1);
+    auto setTypeface = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setTypeface",
+                                             "(Landroid/graphics/Typeface;I)V");
+    c::env()->CallVoidMethod(v, setTypeface, (jobject) nullptr, 1);
     return *this;
 }
 
 Text &Text::text(const std::string &label) {
     auto v = (jobject)view;
-    auto setText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
-    c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
+    auto setText = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setText",
+                                         "(Ljava/lang/CharSequence;)V");
+    c::env()->CallVoidMethod(v, setText, c::env()->NewStringUTF(label.c_str()));
     return *this;
 }
 
 Text &Text::center() {
     auto v = (jobject)view;
-    auto setGravity = c::env->GetMethodID(c::env->GetObjectClass(v), "setGravity", "(I)V");
-    c::env->CallVoidMethod(v, setGravity, 17 /*center*/);
+    auto setGravity = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setGravity", "(I)V");
+    c::env()->CallVoidMethod(v, setGravity, 17 /*center*/);
     return *this;
 }
 
 Text &Text::foreground(uint32_t c) {
     auto v = (jobject)view;
-    auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
-    c::env->CallVoidMethod(v, setTextColor, argb2rgba(c));
+    auto setTextColor = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setTextColor", "(I)V");
+    c::env()->CallVoidMethod(v, setTextColor, argb2rgba(c));
     return *this;
 }
 
@@ -652,7 +663,7 @@ DEFINE_STYLES(Text)
 
 void *TextField_init() {
     auto view = android_new_view("android/widget/EditText");
-    return c::env->NewWeakGlobalRef(view);
+    return c::env()->NewWeakGlobalRef(view);
 }
 
 TextField::TextField(void *b) : Widget(b) {}
@@ -661,38 +672,38 @@ TextField::TextField() : Widget(TextField_init()) {}
 
 TextField &TextField::fontsize(int size) {
     auto v = (jobject)view;
-    auto setTextSize = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextSize", "(F)V");
-    c::env->CallVoidMethod(v, setTextSize, (float)size);
+    auto setTextSize = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setTextSize", "(F)V");
+    c::env()->CallVoidMethod(v, setTextSize, (float)size);
     return *this;
 }
 
 TextField &TextField::text(const std::string &label) {
     auto v = (jobject)view;
-    auto setText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "setText", "(Ljava/lang/CharSequence;)V");
-    c::env->CallVoidMethod(v, setText, c::env->NewStringUTF(label.c_str()));
+    auto setText = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setText",
+                                         "(Ljava/lang/CharSequence;)V");
+    c::env()->CallVoidMethod(v, setText, c::env()->NewStringUTF(label.c_str()));
     return *this;
 }
 
 std::string TextField::text() const {
     auto v = (jobject)view;
     auto getText =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "getText", "()Ljava/lang/CharSequence;");
-    auto ret = c::env->CallObjectMethod(v, getText);
+        c::env()->GetMethodID(c::env()->GetObjectClass(v), "getText", "()Ljava/lang/CharSequence;");
+    auto ret = c::env()->CallObjectMethod(v, getText);
     return std::string(reinterpret_cast<const char *>(ret));
 }
 
 TextField &TextField::center() {
     auto v = (jobject)view;
-    auto setGravity = c::env->GetMethodID(c::env->GetObjectClass(v), "setGravity", "(I)V");
-    c::env->CallVoidMethod(v, setGravity, 17 /*center*/);
+    auto setGravity = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setGravity", "(I)V");
+    c::env()->CallVoidMethod(v, setGravity, 17 /*center*/);
     return *this;
 }
 
 TextField &TextField::foreground(uint32_t c) {
     auto v = (jobject)view;
-    auto setTextColor = c::env->GetMethodID(c::env->GetObjectClass(v), "setTextColor", "(I)V");
-    c::env->CallVoidMethod(v, setTextColor, argb2rgba(c));
+    auto setTextColor = c::env()->GetMethodID(c::env()->GetObjectClass(v), "setTextColor", "(I)V");
+    c::env()->CallVoidMethod(v, setTextColor, argb2rgba(c));
     return *this;
 }
 
@@ -700,7 +711,7 @@ DEFINE_STYLES(TextField)
 
 void *Spacer_init() {
     auto view = android_new_view("android/widget/Space");
-    return c::env->NewWeakGlobalRef(view);
+    return c::env()->NewWeakGlobalRef(view);
 }
 
 Spacer::Spacer(void *b) : Widget(b) {}
@@ -712,11 +723,11 @@ DEFINE_STYLES(Spacer)
 void *VStack_init() {
     auto view = android_new_view("android/widget/LinearLayout");
     auto setOrientation =
-        c::env->GetMethodID(c::env->GetObjectClass(view), "setOrientation", "(I)V");
-    c::env->CallVoidMethod(view, setOrientation, 1 /*vertical*/);
-    auto setGravity = c::env->GetMethodID(c::env->GetObjectClass(view), "setGravity", "(I)V");
-    c::env->CallVoidMethod(view, setGravity, 17 /*center*/);
-    return c::env->NewWeakGlobalRef(view);
+        c::env()->GetMethodID(c::env()->GetObjectClass(view), "setOrientation", "(I)V");
+    c::env()->CallVoidMethod(view, setOrientation, 1 /*vertical*/);
+    auto setGravity = c::env()->GetMethodID(c::env()->GetObjectClass(view), "setGravity", "(I)V");
+    c::env()->CallVoidMethod(view, setGravity, 17 /*center*/);
+    return c::env()->NewWeakGlobalRef(view);
 }
 
 MainView::MainView(void *m) : Widget(m) {}
@@ -724,16 +735,17 @@ MainView::MainView(void *m) : Widget(m) {}
 MainView::MainView(const FlouiViewController &, std::initializer_list<Widget> l)
     : Widget(VStack_init()) {
     auto v = (jobject)view;
-    auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
-                                       "(Landroid/view/View;)V");
-    c::env->CallVoidMethod(c::layout, addview, v);
-    auto getLayoutParams = c::env->GetMethodID(c::env->GetObjectClass(c::layout), "getLayoutParams",
-                                               "()Landroid/view/ViewGroup$LayoutParams;");
-    auto params = c::env->CallObjectMethod(v, getLayoutParams);
-    auto width = c::env->GetFieldID(c::env->GetObjectClass(params), "width", "I");
-    c::env->SetIntField(params, width, -1);
+    auto addview = c::env()->GetMethodID(c::env()->FindClass("android/view/ViewGroup"), "addView",
+                                         "(Landroid/view/View;)V");
+    c::env()->CallVoidMethod(c::layout, addview, v);
+    auto getLayoutParams =
+        c::env()->GetMethodID(c::env()->GetObjectClass(c::layout), "getLayoutParams",
+                              "()Landroid/view/ViewGroup$LayoutParams;");
+    auto params = c::env()->CallObjectMethod(v, getLayoutParams);
+    auto width = c::env()->GetFieldID(c::env()->GetObjectClass(params), "width", "I");
+    c::env()->SetIntField(params, width, -1);
     for (auto &e : l) {
-        c::env->CallVoidMethod(v, addview, (jobject)e.inner());
+        c::env()->CallVoidMethod(v, addview, (jobject)e.inner());
     }
 }
 
@@ -741,25 +753,25 @@ MainView &MainView::spacing(int) { return *this; }
 
 MainView &MainView::add(const Widget &w) {
     auto v = (jobject)view;
-    auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
-                                       "(Landroid/view/View;)V");
-    c::env->CallVoidMethod(v, addview, (jobject)w.inner());
+    auto addview = c::env()->GetMethodID(c::env()->FindClass("android/view/ViewGroup"), "addView",
+                                         "(Landroid/view/View;)V");
+    c::env()->CallVoidMethod(v, addview, (jobject)w.inner());
     return *this;
 }
 
 MainView &MainView::remove(const Widget &w) {
     auto v = (jobject)view;
-    auto removeView = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "removeView",
-                                          "(Landroid/view/View;)V");
-    c::env->CallVoidMethod(v, removeView, (jobject)w.inner());
+    auto removeView = c::env()->GetMethodID(c::env()->FindClass("android/view/ViewGroup"),
+                                            "removeView", "(Landroid/view/View;)V");
+    c::env()->CallVoidMethod(v, removeView, (jobject)w.inner());
     return *this;
 }
 
 MainView &MainView::clear() {
     auto v = (jobject)view;
-    auto removeAllViews =
-        c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "removeAllViews", "()V");
-    c::env->CallVoidMethod(v, removeAllViews);
+    auto removeAllViews = c::env()->GetMethodID(c::env()->FindClass("android/view/ViewGroup"),
+                                                "removeAllViews", "()V");
+    c::env()->CallVoidMethod(v, removeAllViews);
     return *this;
 }
 
@@ -769,10 +781,10 @@ VStack::VStack(void *m) : Widget(m) {}
 
 VStack::VStack(std::initializer_list<Widget> l) : Widget(VStack_init()) {
     auto v = (jobject)view;
-    auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
-                                       "(Landroid/view/View;)V");
+    auto addview = c::env()->GetMethodID(c::env()->FindClass("android/view/ViewGroup"), "addView",
+                                         "(Landroid/view/View;)V");
     for (auto &e : l) {
-        c::env->CallVoidMethod(v, addview, (jobject)e.inner());
+        c::env()->CallVoidMethod(v, addview, (jobject)e.inner());
     }
 }
 
@@ -780,25 +792,25 @@ VStack &VStack::spacing(int) { return *this; }
 
 VStack &VStack::add(const Widget &w) {
     auto v = (jobject)view;
-    auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
-                                       "(Landroid/view/View;)V");
-    c::env->CallVoidMethod(v, addview, (jobject)w.inner());
+    auto addview = c::env()->GetMethodID(c::env()->FindClass("android/view/ViewGroup"), "addView",
+                                         "(Landroid/view/View;)V");
+    c::env()->CallVoidMethod(v, addview, (jobject)w.inner());
     return *this;
 }
 
 VStack &VStack::remove(const Widget &w) {
     auto v = (jobject)view;
-    auto removeView = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "removeView",
-                                          "(Landroid/view/View;)V");
-    c::env->CallVoidMethod(v, removeView, (jobject)w.inner());
+    auto removeView = c::env()->GetMethodID(c::env()->FindClass("android/view/ViewGroup"),
+                                            "removeView", "(Landroid/view/View;)V");
+    c::env()->CallVoidMethod(v, removeView, (jobject)w.inner());
     return *this;
 }
 
 VStack &VStack::clear() {
     auto v = (jobject)view;
-    auto removeAllViews =
-        c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "removeAllViews", "()V");
-    c::env->CallVoidMethod(v, removeAllViews);
+    auto removeAllViews = c::env()->GetMethodID(c::env()->FindClass("android/view/ViewGroup"),
+                                                "removeAllViews", "()V");
+    c::env()->CallVoidMethod(v, removeAllViews);
     return *this;
 }
 
@@ -807,21 +819,21 @@ DEFINE_STYLES(VStack)
 void *HStack_init() {
     auto view = android_new_view("android/widget/LinearLayout");
     auto setOrientation =
-        c::env->GetMethodID(c::env->GetObjectClass(view), "setOrientation", "(I)V");
-    c::env->CallVoidMethod(view, setOrientation, 0 /*Horizontal*/);
-    auto setGravity = c::env->GetMethodID(c::env->GetObjectClass(view), "setGravity", "(I)V");
-    c::env->CallVoidMethod(view, setGravity, 17 /*center*/);
-    return c::env->NewWeakGlobalRef(view);
+        c::env()->GetMethodID(c::env()->GetObjectClass(view), "setOrientation", "(I)V");
+    c::env()->CallVoidMethod(view, setOrientation, 0 /*Horizontal*/);
+    auto setGravity = c::env()->GetMethodID(c::env()->GetObjectClass(view), "setGravity", "(I)V");
+    c::env()->CallVoidMethod(view, setGravity, 17 /*center*/);
+    return c::env()->NewWeakGlobalRef(view);
 }
 
 HStack::HStack(void *m) : Widget(m) {}
 
 HStack::HStack(std::initializer_list<Widget> l) : Widget(HStack_init()) {
     auto v = (jobject)view;
-    auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
-                                       "(Landroid/view/View;)V");
+    auto addview = c::env()->GetMethodID(c::env()->FindClass("android/view/ViewGroup"), "addView",
+                                         "(Landroid/view/View;)V");
     for (auto &e : l) {
-        c::env->CallVoidMethod(v, addview, (jobject)e.inner());
+        c::env()->CallVoidMethod(v, addview, (jobject)e.inner());
     }
 }
 
@@ -829,53 +841,53 @@ HStack &HStack::spacing(int) { return *this; }
 
 HStack &HStack::add(const Widget &w) {
     auto v = (jobject)view;
-    auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
-                                       "(Landroid/view/View;)V");
-    c::env->CallVoidMethod(v, addview, (jobject)w.inner());
+    auto addview = c::env()->GetMethodID(c::env()->FindClass("android/view/ViewGroup"), "addView",
+                                         "(Landroid/view/View;)V");
+    c::env()->CallVoidMethod(v, addview, (jobject)w.inner());
     return *this;
 }
 
 HStack &HStack::remove(const Widget &w) {
     auto v = (jobject)view;
-    auto removeView = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "removeView",
-                                          "(Landroid/view/View;)V");
-    c::env->CallVoidMethod(v, removeView, (jobject)w.inner());
+    auto removeView = c::env()->GetMethodID(c::env()->FindClass("android/view/ViewGroup"),
+                                            "removeView", "(Landroid/view/View;)V");
+    c::env()->CallVoidMethod(v, removeView, (jobject)w.inner());
     return *this;
 }
 
 HStack &HStack::clear() {
     auto v = (jobject)view;
-    auto removeAllViews =
-        c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "removeAllViews", "()V");
-    c::env->CallVoidMethod(v, removeAllViews);
+    auto removeAllViews = c::env()->GetMethodID(c::env()->FindClass("android/view/ViewGroup"),
+                                                "removeAllViews", "()V");
+    c::env()->CallVoidMethod(v, removeAllViews);
     return *this;
 }
 
 DEFINE_STYLES(HStack)
 
 void *ImageView_init(const std::string &path) {
-    auto getResources = c::env->GetMethodID(c::env->GetObjectClass(c::main_activity),
-                                            "getResources", "()Landroid/content/res/Resources;");
-    auto resources = c::env->CallObjectMethod(c::main_activity, getResources);
-    auto getPackageName = c::env->GetMethodID(c::env->GetObjectClass(c::main_activity),
-                                              "getPackageName", "()Ljava/lang/String;");
-    auto packageName = c::env->CallObjectMethod(c::main_activity, getPackageName);
+    auto getResources = c::env()->GetMethodID(c::env()->GetObjectClass(c::main_activity),
+                                              "getResources", "()Landroid/content/res/Resources;");
+    auto resources = c::env()->CallObjectMethod(c::main_activity, getResources);
+    auto getPackageName = c::env()->GetMethodID(c::env()->GetObjectClass(c::main_activity),
+                                                "getPackageName", "()Ljava/lang/String;");
+    auto packageName = c::env()->CallObjectMethod(c::main_activity, getPackageName);
     auto getIdentifier =
-        c::env->GetMethodID(c::env->GetObjectClass(resources), "getIdentifier",
-                            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
-    auto resId = c::env->CallIntMethod(resources, getIdentifier,
-                                       c::env->NewStringUTF(path.substr(0, path.find('.')).c_str()),
-                                       c::env->NewStringUTF("drawable"), packageName);
+        c::env()->GetMethodID(c::env()->GetObjectClass(resources), "getIdentifier",
+                              "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
+    auto resId = c::env()->CallIntMethod(
+        resources, getIdentifier, c::env()->NewStringUTF(path.substr(0, path.find('.')).c_str()),
+        c::env()->NewStringUTF("drawable"), packageName);
     auto view = android_new_view("android/widget/ImageView");
-    auto setImageResource = c::env->GetMethodID(c::env->FindClass("android/widget/ImageView"),
-                                                "setImageResource", "(I)V");
-    c::env->CallVoidMethod(view, setImageResource, resId);
-    return c::env->NewWeakGlobalRef(view);
+    auto setImageResource = c::env()->GetMethodID(c::env()->FindClass("android/widget/ImageView"),
+                                                  "setImageResource", "(I)V");
+    c::env()->CallVoidMethod(view, setImageResource, resId);
+    return c::env()->NewWeakGlobalRef(view);
 }
 
 void *ImageView_init() {
     auto view = android_new_view("android/widget/ImageView");
-    return c::env->NewWeakGlobalRef(view);
+    return c::env()->NewWeakGlobalRef(view);
 }
 
 ImageView::ImageView(void *v) : Widget(v) {}
@@ -886,21 +898,21 @@ ImageView::ImageView(const std::string &path) : Widget(ImageView_init(path)) {}
 
 ImageView &ImageView::image(const std::string &path) {
     auto v = (jobject)view;
-    auto getResources = c::env->GetMethodID(c::env->GetObjectClass(c::main_activity),
-                                            "getResources", "()Landroid/content/res/Resources;");
-    auto resources = c::env->CallObjectMethod(c::main_activity, getResources);
-    auto getPackageName = c::env->GetMethodID(c::env->GetObjectClass(c::main_activity),
-                                              "getPackageName", "()Ljava/lang/String;");
-    auto packageName = c::env->CallObjectMethod(c::main_activity, getPackageName);
+    auto getResources = c::env()->GetMethodID(c::env()->GetObjectClass(c::main_activity),
+                                              "getResources", "()Landroid/content/res/Resources;");
+    auto resources = c::env()->CallObjectMethod(c::main_activity, getResources);
+    auto getPackageName = c::env()->GetMethodID(c::env()->GetObjectClass(c::main_activity),
+                                                "getPackageName", "()Ljava/lang/String;");
+    auto packageName = c::env()->CallObjectMethod(c::main_activity, getPackageName);
     auto getIdentifier =
-        c::env->GetMethodID(c::env->GetObjectClass(resources), "getIdentifier",
-                            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
-    auto resId = c::env->CallIntMethod(resources, getIdentifier,
-                                       c::env->NewStringUTF(path.substr(0, path.find('.')).c_str()),
-                                       c::env->NewStringUTF("drawable"), packageName);
-    auto setImageResource = c::env->GetMethodID(c::env->FindClass("android/widget/ImageView"),
-                                                "setImageResource", "(I)V");
-    c::env->CallVoidMethod(v, setImageResource, resId);
+        c::env()->GetMethodID(c::env()->GetObjectClass(resources), "getIdentifier",
+                              "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
+    auto resId = c::env()->CallIntMethod(
+        resources, getIdentifier, c::env()->NewStringUTF(path.substr(0, path.find('.')).c_str()),
+        c::env()->NewStringUTF("drawable"), packageName);
+    auto setImageResource = c::env()->GetMethodID(c::env()->FindClass("android/widget/ImageView"),
+                                                  "setImageResource", "(I)V");
+    c::env()->CallVoidMethod(v, setImageResource, resId);
     return *this;
 }
 
@@ -908,7 +920,7 @@ DEFINE_STYLES(ImageView)
 
 void *WebView_init() {
     auto view = android_new_view("android/webkit/WebView");
-    return c::env->NewWeakGlobalRef(view);
+    return c::env()->NewWeakGlobalRef(view);
 }
 
 WebView::WebView(void *v) : Widget(v) {}
@@ -918,30 +930,30 @@ WebView::WebView() : Widget(WebView_init()) {}
 WebView &WebView::load_file_url(const std::string &local_path) {
     auto v = (jobject)view;
     auto loadUrl =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "loadUrl", "(Ljava/lang/String;)V");
+        c::env()->GetMethodID(c::env()->GetObjectClass(v), "loadUrl", "(Ljava/lang/String;)V");
     auto path = std::string("file:///android_asset/" +
                             local_path.substr(local_path.find("file:///") + 8, local_path.size()));
-    c::env->CallVoidMethod(v, loadUrl, c::env->NewStringUTF(path.c_str()));
+    c::env()->CallVoidMethod(v, loadUrl, c::env()->NewStringUTF(path.c_str()));
     return *this;
 }
 
 WebView &WebView::load_http_url(const std::string &path) {
     auto v = (jobject)view;
     auto loadUrl =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "loadUrl", "(Ljava/lang/String;)V");
-    c::env->CallVoidMethod(v, loadUrl, c::env->NewStringUTF(path.c_str()));
+        c::env()->GetMethodID(c::env()->GetObjectClass(v), "loadUrl", "(Ljava/lang/String;)V");
+    c::env()->CallVoidMethod(v, loadUrl, c::env()->NewStringUTF(path.c_str()));
     return *this;
 }
 
 WebView &WebView::load_html(const std::string &html) {
     auto v = (jobject)view;
     auto loadData =
-        c::env->GetMethodID(c::env->GetObjectClass(v), "loadDataWithBaseURL",
-                            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/"
-                            "lang/String;Ljava/lang/String;)V");
-    c::env->CallVoidMethod(v, loadData, nullptr, c::env->NewStringUTF(html.c_str()),
-                           c::env->NewStringUTF("text/html"), c::env->NewStringUTF("utf-8"),
-                           nullptr);
+        c::env()->GetMethodID(c::env()->GetObjectClass(v), "loadDataWithBaseURL",
+                              "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/"
+                              "lang/String;Ljava/lang/String;)V");
+    c::env()->CallVoidMethod(v, loadData, nullptr, c::env()->NewStringUTF(html.c_str()),
+                             c::env()->NewStringUTF("text/html"), c::env()->NewStringUTF("utf-8"),
+                             nullptr);
     return *this;
 }
 
@@ -958,16 +970,16 @@ DEFINE_STYLES(WebView)
 
 void *ScrollView_init() {
     auto view = android_new_view("android/widget/ScrollView");
-    return c::env->NewWeakGlobalRef(view);
+    return c::env()->NewWeakGlobalRef(view);
 }
 
 ScrollView::ScrollView(void *v) : Widget(v) {}
 
 ScrollView::ScrollView(const Widget &w) : Widget(ScrollView_init()) {
     auto v = (jobject)view;
-    auto addview = c::env->GetMethodID(c::env->FindClass("android/view/ViewGroup"), "addView",
-                                       "(Landroid/view/View;)V");
-    c::env->CallVoidMethod(v, addview, (jobject)w.inner());
+    auto addview = c::env()->GetMethodID(c::env()->FindClass("android/view/ViewGroup"), "addView",
+                                         "(Landroid/view/View;)V");
+    c::env()->CallVoidMethod(v, addview, (jobject)w.inner());
 }
 
 DEFINE_STYLES(ScrollView)
