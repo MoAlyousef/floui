@@ -193,8 +193,16 @@ class Text : public Widget {
     explicit Text(const std::string &s);
     /// Centers the text
     Text &center();
+    /// Changes the alignment to left
+    Text &left();
+    /// Changes the alignment to right
+    Text &right();
     /// Makes the text bold
     Text &bold();
+    /// Makes the text italic
+    Text &italic();
+    /// Makes the text normal, which is the default
+    Text &normal();
     /// Sets the text content
     Text &text(const std::string &s);
     /// Sets the text's color
@@ -210,6 +218,10 @@ class TextField : public Widget {
     TextField();
     /// Centers the text
     TextField &center();
+    /// Changes the alignment to left
+    TextField &left();
+    /// Changes the alignment to right
+    TextField &right();
     /// Sets the text content
     TextField &text(const std::string &s);
     /// Sets the text
@@ -662,6 +674,24 @@ Text &Text::bold() {
     return *this;
 }
 
+Text &Text::italic() {
+    auto env = c::env();
+    auto v = (jobject)view;
+    auto setTypeface =
+        env->GetMethodID(env->GetObjectClass(v), "setTypeface", "(Landroid/graphics/Typeface;I)V");
+    env->CallVoidMethod(v, setTypeface, (jobject) nullptr, 2);
+    return *this;
+}
+
+Text &Text::normal() {
+    auto env = c::env();
+    auto v = (jobject)view;
+    auto setTypeface =
+        env->GetMethodID(env->GetObjectClass(v), "setTypeface", "(Landroid/graphics/Typeface;I)V");
+    env->CallVoidMethod(v, setTypeface, (jobject) nullptr, 0);
+    return *this;
+}
+
 Text &Text::text(const std::string &label) {
     auto env = c::env();
     auto v = (jobject)view;
@@ -676,6 +706,22 @@ Text &Text::center() {
     auto v = (jobject)view;
     auto setGravity = env->GetMethodID(env->GetObjectClass(v), "setGravity", "(I)V");
     env->CallVoidMethod(v, setGravity, 17 /*center*/);
+    return *this;
+}
+
+Text &Text::left() {
+    auto env = c::env();
+    auto v = (jobject)view;
+    auto setGravity = env->GetMethodID(env->GetObjectClass(v), "setGravity", "(I)V");
+    env->CallVoidMethod(v, setGravity, 3 /*left*/);
+    return *this;
+}
+
+Text &Text::right() {
+    auto env = c::env();
+    auto v = (jobject)view;
+    auto setGravity = env->GetMethodID(env->GetObjectClass(v), "setGravity", "(I)V");
+    env->CallVoidMethod(v, setGravity, 5 /*right*/);
     return *this;
 }
 
@@ -730,6 +776,22 @@ TextField &TextField::center() {
     auto v = (jobject)view;
     auto setGravity = env->GetMethodID(env->GetObjectClass(v), "setGravity", "(I)V");
     env->CallVoidMethod(v, setGravity, 17 /*center*/);
+    return *this;
+}
+
+TextField &TextField::left() {
+    auto env = c::env();
+    auto v = (jobject)view;
+    auto setGravity = env->GetMethodID(env->GetObjectClass(v), "setGravity", "(I)V");
+    env->CallVoidMethod(v, setGravity, 3 /*left*/);
+    return *this;
+}
+
+TextField &TextField::right() {
+    auto env = c::env();
+    auto v = (jobject)view;
+    auto setGravity = env->GetMethodID(env->GetObjectClass(v), "setGravity", "(I)V");
+    env->CallVoidMethod(v, setGravity, 5 /*right*/);
     return *this;
 }
 
@@ -1338,6 +1400,18 @@ Text &Text::center() {
     return *this;
 }
 
+Text &Text::left() {
+    auto v = (__bridge UILabel *)view;
+    [v setTextAlignment:NSTextAlignmentLeft];
+    return *this;
+}
+
+Text &Text::right() {
+    auto v = (__bridge UILabel *)view;
+    [v setTextAlignment:NSTextAlignmentRight];
+    return *this;
+}
+
 Text &Text::text(const std::string &s) {
     auto v = (__bridge UILabel *)view;
     [v setText:[NSString stringWithUTF8String:s.c_str()]];
@@ -1353,6 +1427,18 @@ Text &Text::fontsize(int size) {
 Text &Text::bold() {
     auto v = (__bridge UILabel *)view;
     [v setFont:[UIFont boldSystemFontOfSize:v.font.pointSize]];
+    return *this;
+}
+
+Text &Text::italic() {
+    auto v = (__bridge UILabel *)view;
+    [v setFont:[UIFont italicSystemFontOfSize:v.font.pointSize]];
+    return *this;
+}
+
+Text &Text::normal() {
+    auto v = (__bridge UILabel *)view;
+    [v setFont:[UIFont systemFontOfSize:v.font.pointSize]];
     return *this;
 }
 
@@ -1376,6 +1462,19 @@ TextField &TextField::center() {
     [v setTextAlignment:NSTextAlignmentCenter];
     return *this;
 }
+
+TextField &TextField::left() {
+    auto v = (__bridge UITextField *)view;
+    [v setTextAlignment:NSTextAlignmentLeft];
+    return *this;
+}
+
+TextField &TextField::right() {
+    auto v = (__bridge UITextField *)view;
+    [v setTextAlignment:NSTextAlignmentRight];
+    return *this;
+}
+
 
 TextField &TextField::text(const std::string &s) {
     auto v = (__bridge UITextField *)view;
